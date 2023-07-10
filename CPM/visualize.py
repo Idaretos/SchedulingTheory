@@ -50,19 +50,19 @@ def visualize():
     graph.add_node('start', label=f'0 / {min(latest_start_time[source] for source in network.sources)}')
     predecessors = defaultdict(list)
     successors = defaultdict(list)
-    for id, job in jobs:
+    for id, job in jobs.items():
         for predecessor_id in job.predecessors:
-            predecessors.append(predecessor_id)
+            predecessors[id].append(predecessor_id)
             if jobs[id] not in successors[predecessor_id]:
                 successors[predecessor_id].append(id)
 
     out_in = defaultdict(list)
     for job in jobs.values():
         for predecessor_id in job.predecessors:
-            out_in[successors[predecessor_id]].append(predecessor_id)
+            out_in[tuple(successors[predecessor_id])].append(predecessor_id)
         
     out_dict = find_subsets(out_in.keys())
-    
+    print(out_dict)
         
     
     # for source in network.sources:
@@ -113,13 +113,14 @@ def visualize():
 def find_subsets(superlist):
     results = {}
     for i in range(len(superlist) - 1):
-        lst1 = superlist[i]
-        lst2 = superlist[i+1]
-        for j in range(1, len(lst1) + 1):
-            if lst1[-j:] == lst2[:j]:
-                results[tuple(lst1)] = [lst1[:-j], lst1[-j:]]
-                results[tuple(lst2)] = [lst2[:j], lst2[j:]]
-                break
+        lst1 = list(superlist[i])
+        for k in range(i+1, len(superlist)):
+            lst2 = list(superlist[k])
+            for j in range(1, len(lst1) + 1):
+                if lst1[-j:] == lst2[:j]:
+                    results[tuple(lst1)] = [lst1[:-j], lst1[-j:]]
+                    results[tuple(lst2)] = [lst2[:j], lst2[j:]]
+                    break
     return results
 
 if __name__ == '__main__':
