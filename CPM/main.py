@@ -1,5 +1,6 @@
+import sys
 from CPM import *
-from visualize import visualize_CPM
+from visualize import visualize_CPM, DEAFULT_PATH
 
 if __name__ == '__main__':
     jobs = {1: Job('1', 4, predecessors=[]), 
@@ -15,9 +16,7 @@ if __name__ == '__main__':
     network = Network(jobs)
 
     # Run the CPM algorithm
-    earliest_start_time, earliest_finish_time, latest_start_time, latest_finish_time, slacks, critical_path = cpm_algorithm(
-        network
-    )
+    earliest_start_time, earliest_finish_time, latest_start_time, latest_finish_time, slacks, critical_path = cpm_algorithm(network)
 
     # Print the results
     print("Earliest Start Time:", earliest_start_time)
@@ -27,5 +26,9 @@ if __name__ == '__main__':
     print("Slacks:", slacks)
     print("Critical Path:", critical_path)
     print("Makespan: ", max(earliest_finish_time.values()))
-    visualize_CPM(jobs, critical_path)
 
+    if len(sys.argv) > 1:
+        outputpath = sys.argv[1]
+    else:
+        outputpath = DEAFULT_PATH
+    visualize_CPM(jobs, critical_path, outputpath)

@@ -80,7 +80,8 @@ class States(object):
         return shared_outgoing
 
 
-def visualize_CPM(jobs, critical_path, outputpath='SchedulingTheory/CPM/output') -> None:    
+DEAFULT_PATH = 'SchedulingTheory/CPM/output'
+def visualize_CPM(jobs, critical_path, outputpath=DEAFULT_PATH) -> None:    
     network = Network(jobs)
 
     # Create a dictionary to store all states
