@@ -1,17 +1,24 @@
 import sys
+import json
 from CPM import *
 from visualize import visualize_CPM, DEAFULT_PATH
 
 if __name__ == '__main__':
-    jobs = {1: Job('1', 4, predecessors=[]), 
-            2: Job('2', 6, predecessors=[]), 
-            3: Job('3', 10, predecessors=[]), 
-            4: Job('4', 12, predecessors=[1]), 
-            5: Job('5', 10, predecessors=[2]), 
-            6: Job('6', 2, predecessors=[3, 4, 5]), 
-            7: Job('7', 4, predecessors=[3, 4]), 
-            8: Job('8', 2, predecessors=[6, 7])}
- 
+
+    if len(sys.argv) > 1:
+        inputpath = sys.argv[1]
+    if len(sys.argv) > 2:
+        outputpath = sys.argv[2]
+    else:
+        inputpath = 'SchedulingTheory/CPM/input/example.json'
+        outputpath = DEAFULT_PATH
+
+    with open(inputpath, 'r') as f:
+        jobs_dict = json.load(f)
+
+    # Convert the dictionary back to Job objects
+    jobs = {int(id): Job(**job_data) for id, job_data in jobs_dict.items()}
+
     # Create the network and add jobs and dependencies
     network = Network(jobs)
 
@@ -27,8 +34,4 @@ if __name__ == '__main__':
     print("Critical Path:", critical_path)
     print("Makespan: ", max(earliest_finish_time.values()))
 
-    if len(sys.argv) > 1:
-        outputpath = sys.argv[1]
-    else:
-        outputpath = DEAFULT_PATH
     visualize_CPM(jobs, critical_path, outputpath)
