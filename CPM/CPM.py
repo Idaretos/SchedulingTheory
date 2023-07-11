@@ -3,52 +3,72 @@ from copy import deepcopy
 
 
 class Job:
-    def __init__(self, id, duration, predecessors):
+    def __init__(self, id, duration, predecessors) -> None:
         self.id = id
         self.duration = duration
         self.predecessors = predecessors
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.id
+    
+    def __eq__(self, other):
+        if isinstance(other, Job):
+            return self.id == other.id
+        return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __lt__(self, other):
+        if isinstance(other, Job):
+            return self.id < other.id
+        return False
+
+    def __le__(self, other):
+        return self.__lt__(other) or self.__eq__(other)
+
+    def __gt__(self, other):
+        if isinstance(other, Job):
+            return self.id > other.id
+        return False
+
+    def __ge__(self, other):
+        return self.__gt__(other) or self.__eq__(other)
+    
+    def __hash__(self):
+        return hash(self.id)
 
 
 class Network:
-    def __init__(self, jobs):
+    def __init__(self, jobs) -> None:
         '''
         parameters:
         jobs: dictionary of jobs.
         '''
-        self.jobs = jobs.values()
+        self.jobs = list(jobs.values())
         self.predecessors = defaultdict(list)
         self.successors = defaultdict(list)
         for job in self.jobs:
             self.predecessors[job] += [jobs[i] for i in job.predecessors]
-            for predecessor in job.predecessors:
-                self.successors[predecessor].append(job)
+            for predecessor_id in job.predecessors:
+                self.successors[jobs[predecessor_id]].append(job)
         self.sources = []
         self.sinks = []
         self.sort()
 
-    def add_job(self, job):
-        self.jobs.append(job)
-
-    def add_dependency(self, successor, predecessor):
-        self.predecessors[successor].append(predecessor)
-        self.successors[predecessor].append(successor)
-
-    def sort(self):
+    def sort(self) -> None:
         self.sources, self.sinks, self.jobs = topological_sort(self.jobs, self.successors)
 
-    def get_jobs(self):
+    def get_jobs(self) -> list:
         return self.jobs
 
-    def get_predecessors(self):
+    def get_predecessors(self) -> defaultdict:
         return self.predecessors
     
-    def get_successors(self):
+    def get_successors(self) -> defaultdict:
         return self.successors
 
-def topological_sort(jobs, successors):
+def topological_sort(jobs, successors) -> tuple:
     in_degree = defaultdict(int)
     sorted_order = []
 
@@ -79,7 +99,7 @@ def topological_sort(jobs, successors):
 
     return sources_to_return, sinks, sorted_order
 
-def calculate_earliest_times(network):
+def calculate_earliest_times(network) -> tuple:
     jobs = network.get_jobs()
     predecessors = network.get_predecessors()
 
@@ -102,7 +122,7 @@ def calculate_earliest_times(network):
     return earliest_start_time, earliest_finish_time
 
 
-def calculate_latest_times(network, earliest_finish_time):
+def calculate_latest_times(network, earliest_finish_time) -> tuple:
     jobs = network.get_jobs()
     successors = network.get_successors()
 
@@ -128,7 +148,7 @@ def calculate_latest_times(network, earliest_finish_time):
     return dict(reversed(list(latest_start_time.items()))),  dict(reversed(list(latest_finish_time.items())))
 
 
-def calculate_slacks(earliest_start_time, latest_start_time):
+def calculate_slacks(earliest_start_time, latest_start_time) -> dict:
     slacks = {}
     for job in earliest_start_time:
         slack_time = latest_start_time[job] - earliest_start_time[job]
@@ -136,12 +156,12 @@ def calculate_slacks(earliest_start_time, latest_start_time):
     return slacks
 
 
-def calculate_critical_path(slacks):
+def calculate_critical_path(slacks) -> list:
     critical_path = [job for job, slack_time in slacks.items() if slack_time == 0]
     return critical_path
 
 
-def cpm_algorithm(network):
+def cpm_algorithm(network) -> tuple:
     earliest_start_time, earliest_finish_time = calculate_earliest_times(network)
     latest_start_time, latest_finish_time = calculate_latest_times(network, earliest_finish_time)
     slacks = calculate_slacks(earliest_start_time, latest_start_time)

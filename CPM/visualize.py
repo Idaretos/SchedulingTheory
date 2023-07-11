@@ -3,15 +3,61 @@ import matplotlib.pyplot as plt
 from collections import defaultdict
 from CPM import *
 
-class Node(object):
-    def __init__(self, incoming_edges, outgoing_edges) -> None:
-        self.incoming_edges = [incoming_edges]
-        self.outgoing_edges = outgoing_edges
-    
-    def add_outgoing_edge(self, edge):
-        self.outgoing_edges.append(edge)
+# Define a class State to represent each state with its incoming and outgoing jobs
+class State(object):
+    def __init__(self, id) -> None:
+        self.id = id
+        self.incoming = []
+        self.outgoing = []
 
-def visualize_CPM():
+    def add_incoming(self, job_id) -> None:
+        self.incoming.append(job_id)
+
+    def add_outgoing(self, job_id) -> None:
+        self.outgoing.append(job_id)
+
+    def subset(self, state) -> bool:
+        pass
+
+    def __str__(self) -> str:
+        return f"State {self.id}"
+    
+    def __repr__(self) -> str:
+        return f"State {self.id}" # : Incoming jobs = {self.incoming}, Outgoing jobs = {self.outgoing}
+
+    
+class States(object):
+    def __init__(self, states) -> None:
+        self.states = states
+        self.shared_outgoing = self.find_shared_outgoing()
+        for key in self.shared_outgoing.keys():
+            states = self.shared_outgoing[key]
+            state = states[0]
+            for i in range(1, len(states)):
+                state.add_incoming(states[i].incoming[0])
+                for k, v in self.states.items():
+                    if self.states[k] == states[i]:
+                        self.states[k] = state
+        print(self.states)
+        
+    def states_dict(self):
+        return self.states
+
+    def find_shared_outgoing(self) -> dict:
+        # Create a dictionary where the keys are the outgoing jobs, and the values are lists of states
+        outgoing_dict = defaultdict(list)
+        for state in self.states.values():
+            # Convert the list of outgoing jobs to a tuple so it can be used as a dictionary key
+            outgoing_tuple = tuple(sorted(state.outgoing))
+            outgoing_dict[outgoing_tuple].append(state)
+
+        # Find and return only those outgoing jobs that are shared by more than one state
+        shared_outgoing = {outgoing: states for outgoing, states in outgoing_dict.items() if len(states) > 1}
+        print(shared_outgoing)
+        return shared_outgoing
+
+
+def visualize_CPM() -> None:
     # Create the network and add jobs and dependencies
     jobs = {1: Job('1', 4, predecessors=[]), 
             2: Job('2', 6, predecessors=[]), 
@@ -27,90 +73,44 @@ def visualize_CPM():
     # Run the CPM algorithm
     earliest_start_time, earliest_finish_time, latest_start_time, latest_finish_time, slacks, critical_path = cpm_algorithm(network)
 
+    # Create a dictionary to store all states
+    states = {0: State(0)}
+
+    # Add jobs with no predecessors starting from "state 0"
+    for job in network.sources:
+        states[0].add_outgoing(job.id)
+
+    # Add the rest of the jobs
+    for job in jobs.values():
+        states[job] = State(job.id)
+        states[job].add_incoming(job)
+    for job in jobs.values():
+        for predecessor_id in job.predecessors:
+            states[jobs[predecessor_id]].add_outgoing(job)
+
+    st = States(states)
+    states = st.states_dict()
+
     # Create a directed graph
-    graph = nx.DiGraph()
+    G_jobs_states = nx.DiGraph()
 
-    # # find predecessor count
-    # job_count = len(jobs)
-    # predecessor_count = 0
-    # for job in jobs.values():
-    #     predecessor_count += len(job.predecessors)
-
-    # # Add nodes representing jobs and display earliest time and latest time as labels
-    # for job in jobs.values():
-    #     graph.add_node(job, label=f'{earliest_start_time[job]}/{latest_start_time[job]}')
-
-    # # Add nodes representing predecessors and find out the incoming and outgoing edges
-    # for i in range(predecessor_count):
-    #     graph.add_node(i, label=f'{earliest_start_time[job]}/{latest_start_time[job]}')
-
-    # Find out the incoming and outgoing edges for each nodes and create nodes
-
-    # Starting node
-    graph.add_node('start', label=f'0 / {min(latest_start_time[source] for source in network.sources)}')
-    predecessors = defaultdict(list)
-    successors = defaultdict(list)
-    for id, job in jobs.items():
-        for predecessor_id in job.predecessors:
-            predecessors[id].append(predecessor_id)
-            if jobs[id] not in successors[predecessor_id]:
-                successors[predecessor_id].append(id)
-
-    out_in = defaultdict(list)
-    for job in jobs.values():
-        for predecessor_id in job.predecessors:
-            out_in[tuple(successors[predecessor_id])].append(predecessor_id)
-        
-    print(list(out_in.keys()))
-    out_dict = find_subsets(list(out_in.keys()))
-    print(out_dict)
-    for key, value in out_dict.items():
-        print(key, value)
-    
-    # for source in network.sources:
-    #     edge_name = source.id
-    #     graph.add_node('next', label=f'{latest_finish_time[source]} / ')
-    #     graph.add_edge(source, source.id, label=edge_name)
-        
-
-    # Add arcs representing dependencies with weights shown within edge names
-    for job in jobs.values():
-        for predecessor in job.predecessors:
-            edge_name = f'{jobs[predecessor].duration} ({predecessor}->{job.id})'
-            graph.add_edge(predecessor, job.id, label=edge_name)
-
-    # Define the critical path
-    critical_path_nodes = [job.id for job in critical_path]
+    for state in states.values():
+        print(state.id, state.incoming, state.outgoing)
+    print(states)
+    # Add edges based on the states
+    for state in states.values():
+        for outgoing in state.outgoing:
+            G_jobs_states.add_edge(state, states[jobs[int(str(outgoing))]], label="job " + str(outgoing))
 
     # Draw the graph
-    pos = nx.spring_layout(graph)  # Set the layout of the graph
-
-    # Draw non-critical edges
-    non_critical_edges = [(u, v) for u, v in graph.edges() if u not in critical_path_nodes or v not in critical_path_nodes]
-    nx.draw_networkx_edges(graph, pos, edgelist=non_critical_edges, edge_color='gray', arrows=True)
-
-    # Draw critical edges
-    critical_edges = [(u, v) for u, v in graph.edges() if u in critical_path_nodes and v in critical_path_nodes]
-    nx.draw_networkx_edges(graph, pos, edgelist=critical_edges, edge_color='red', arrows=True)
-
-    # Draw edge labels within the edge names
-    edge_labels = nx.get_edge_attributes(graph, 'label')
-    nx.draw_networkx_edge_labels(graph, pos, edge_labels=edge_labels, font_size=8)
-
-    # Draw non-critical nodes
-    non_critical_nodes = [node for node in graph.nodes() if node not in critical_path_nodes]
-    nx.draw_networkx_nodes(graph, pos, nodelist=non_critical_nodes, node_color='lightblue', node_size=500)
-
-    # Draw critical nodes
-    nx.draw_networkx_nodes(graph, pos, nodelist=critical_path_nodes, node_color='red', node_size=500)
-
-    # Draw node labels (earliest time and latest time)
-    node_labels = nx.get_node_attributes(graph, 'label')
-    nx.draw_networkx_labels(graph, pos, labels=node_labels, font_size=10)
-
-    # Show the plot
-    plt.axis('off')
+    plt.figure(figsize=(8, 6))
+    pos = nx.spring_layout(G_jobs_states, seed=7)  # positions for all nodes - seed for reproducibility
+    nx.draw(G_jobs_states, pos, with_labels=True, node_color='skyblue', node_size=2000, width=2.0, alpha=0.6, edge_color='gray')
+    nx.draw_networkx_edge_labels(G_jobs_states, pos, edge_labels=nx.get_edge_attributes(G_jobs_states, 'label'), label_pos=0.5)
+    plt.title('Workflow as a Directed Acyclic Graph (States and Jobs on Edges)')
+    plt.savefig('CPM.png')
     plt.show()
+
 
 def find_subsets(superlist):
     results = {}
