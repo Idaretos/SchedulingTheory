@@ -3,10 +3,11 @@ from copy import deepcopy
 
 
 class Job:
-    def __init__(self, id, duration, predecessors) -> None:
+    def __init__(self, id, duration, predecessors, is_dummy=False) -> None:
         self.id = id
         self.duration = duration
         self.predecessors = predecessors
+        self.is_dummy = is_dummy
 
     def __repr__(self) -> str:
         return self.id

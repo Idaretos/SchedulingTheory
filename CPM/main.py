@@ -28,4 +28,4 @@ if __name__ == '__main__':
     print("Critical Path:", critical_path)
     print("Makespan: ", max(earliest_finish_time.values()))
 
-    # visualize_CPM()
+    visualize_CPM(jobs, critical_path)
