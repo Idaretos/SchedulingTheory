@@ -34,6 +34,8 @@ python main.py 'input_filename' 'output_directory'
 ```
 The program will read the `.json` file and runs `CPM`. You should see the output of the CPM algorithm in the console, and a PNG file named `CPM.png` will be created in the output directory, visualizing the job network.
 
+![image not found](output/CPM.png)
+
 ## Dependencies
 
 This project requires the following Python libraries:
