@@ -11,7 +11,7 @@ class Node(object):
     def add_outgoing_edge(self, edge):
         self.outgoing_edges.append(edge)
 
-def visualize():
+def visualize_CPM():
     # Create the network and add jobs and dependencies
     jobs = {1: Job('1', 4, predecessors=[]), 
             2: Job('2', 6, predecessors=[]), 
@@ -61,9 +61,11 @@ def visualize():
         for predecessor_id in job.predecessors:
             out_in[tuple(successors[predecessor_id])].append(predecessor_id)
         
-    out_dict = find_subsets(out_in.keys())
+    print(list(out_in.keys()))
+    out_dict = find_subsets(list(out_in.keys()))
     print(out_dict)
-        
+    for key, value in out_dict.items():
+        print(key, value)
     
     # for source in network.sources:
     #     edge_name = source.id
@@ -112,16 +114,11 @@ def visualize():
 
 def find_subsets(superlist):
     results = {}
-    for i in range(len(superlist) - 1):
-        lst1 = list(superlist[i])
-        for k in range(i+1, len(superlist)):
-            lst2 = list(superlist[k])
-            for j in range(1, len(lst1) + 1):
-                if lst1[-j:] == lst2[:j]:
-                    results[tuple(lst1)] = [lst1[:-j], lst1[-j:]]
-                    results[tuple(lst2)] = [lst2[:j], lst2[j:]]
-                    break
+    for i, A in enumerate(superlist):
+        for j, B in enumerate(superlist):
+            if i != j and set(A).issubset(B):
+                results[A] = B
     return results
 
 if __name__ == '__main__':
-    visualize()
+    visualize_CPM()

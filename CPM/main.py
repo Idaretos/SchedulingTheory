@@ -1,5 +1,5 @@
 from CPM import *
-# from visualize import visualize_CPM
+from visualize import visualize_CPM
 
 if __name__ == '__main__':
     jobs = {1: Job('1', 4, predecessors=[]), 
