@@ -3,8 +3,7 @@ import json
 from CPM import *
 from visualize import visualize_CPM, DEAFULT_PATH
 
-if __name__ == '__main__':
-
+def main():
     if len(sys.argv) > 1:
         inputpath = sys.argv[1]
     if len(sys.argv) > 2:
@@ -35,3 +34,6 @@ if __name__ == '__main__':
     print("Makespan: ", max(earliest_finish_time.values()))
 
     visualize_CPM(jobs, critical_path, outputpath)
+
+if __name__ == '__main__':
+    main()

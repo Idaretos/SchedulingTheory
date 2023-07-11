@@ -5,6 +5,7 @@ import os
 from networkx.drawing.nx_agraph import graphviz_layout
 from collections import defaultdict
 from CPM import *
+import json, sys
 
 # Define a class State to represent each state with its incoming and outgoing jobs
 class State(object):
@@ -81,7 +82,7 @@ class States(object):
 
 
 DEAFULT_PATH = 'SchedulingTheory/CPM/output'
-def visualize_CPM(jobs, critical_path, outputpath=DEAFULT_PATH) -> None:    
+def visualize_CPM(jobs, critical_path, outputpath=DEAFULT_PATH) -> None:
     network = Network(jobs)
 
     # Create a dictionary to store all states
@@ -108,6 +109,8 @@ def visualize_CPM(jobs, critical_path, outputpath=DEAFULT_PATH) -> None:
     # Create a directed graph
     graph = nx.DiGraph()
 
+    graph.graph['graph'] = {'rankdir': 'LR'}
+
     # Add edges based on the states
     for state in states.values():
         if state.id == '3':
@@ -117,6 +120,7 @@ def visualize_CPM(jobs, critical_path, outputpath=DEAFULT_PATH) -> None:
                 graph.add_edge(state, states[jobs[int(outgoing.id)]], label="job " + str(outgoing), is_critical=(outgoing in critical_path), is_dummy=False)
             else:
                 graph.add_edge(state, states[jobs[int(outgoing.id)]], label='dummy', is_critical=(state.is_critical and states[jobs[int(outgoing.id)]].is_critical), is_dummy=True)
+            edge_labels = nx.get_edge_attributes(graph, 'label')
 
     # Draw the graph
     plt.figure(figsize=(8, 6))
@@ -166,5 +170,37 @@ def find_subsets(superlist):
                 results[A] = B
     return results
 
+def main():
+    if len(sys.argv) > 1:
+        inputpath = sys.argv[1]
+    if len(sys.argv) > 2:
+        outputpath = sys.argv[2]
+    else:
+        inputpath = 'SchedulingTheory/CPM/input/lecture.json'
+        outputpath = DEAFULT_PATH
+
+    with open(inputpath, 'r') as f:
+        jobs_dict = json.load(f)
+
+    # Convert the dictionary back to Job objects
+    jobs = {int(id): Job(**job_data) for id, job_data in jobs_dict.items()}
+
+    # Create the network and add jobs and dependencies
+    network = Network(jobs)
+
+    # Run the CPM algorithm
+    earliest_start_time, earliest_finish_time, latest_start_time, latest_finish_time, slacks, critical_path = cpm_algorithm(network)
+
+    # Print the results
+    print("Earliest Start Time:", earliest_start_time)
+    print("Earliest Finish Time:", earliest_finish_time)
+    print("Latest Start Time:", latest_start_time)
+    print("Latest Finish Time:", latest_finish_time)
+    print("Slacks:", slacks)
+    print("Critical Path:", critical_path)
+    print("Makespan: ", max(earliest_finish_time.values()))
+
+    visualize_CPM(jobs, critical_path, outputpath)
+
 if __name__ == '__main__':
-    visualize_CPM()
+    main()
