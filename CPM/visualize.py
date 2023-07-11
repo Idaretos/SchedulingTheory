@@ -30,7 +30,7 @@ class State(object):
         return f"State {self.id}"
     
     def __repr__(self) -> str:
-        return f"State {self.id}" # : Incoming jobs = {self.incoming}, Outgoing jobs = {self.outgoing}
+        return f"State {self.id}"
     
     def __eq__(self, other) -> bool:
         if isinstance(other, State):
@@ -150,9 +150,6 @@ def visualize_CPM(jobs, critical_path, outputpath='SchedulingTheory/CPM/output')
     node_labels = nx.get_node_attributes(graph, 'label')
     nx.draw_networkx_labels(graph, pos, labels=node_labels, font_size=10)
 
-
-    # nx.draw(graph, pos, with_labels=True, node_color='skyblue', node_size=2000, width=2.0, alpha=0.6, edge_color='gray')
-    # nx.draw_networkx_edge_labels(graph, pos, edge_labels=nx.get_edge_attributes(graph, 'label'), label_pos=0.5)
     plt.title('Critical Path Method')
     if not os.path.exists(outputpath):
         os.makedirs(outputpath)
