@@ -1,4 +1,5 @@
 from CPM import *
+from visualize import visualize_CPM
 
 if __name__ == '__main__':
     jobs = {1: Job('1', 4, predecessors=[]), 
@@ -26,3 +27,5 @@ if __name__ == '__main__':
     print("Slacks:", slacks)
     print("Critical Path:", critical_path)
     print("Makespan: ", max(earliest_finish_time.values()))
+    visualize_CPM(jobs, critical_path)
+
