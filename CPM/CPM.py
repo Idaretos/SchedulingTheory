@@ -18,23 +18,16 @@ class Network:
         parameters:
         jobs: dictionary of jobs.
         '''
-        self.jobs = jobs.values()
+        self.jobs = list(jobs.values())
         self.predecessors = defaultdict(list)
         self.successors = defaultdict(list)
         for job in self.jobs:
             self.predecessors[job] += [jobs[i] for i in job.predecessors]
-            for predecessor in job.predecessors:
-                self.successors[predecessor].append(job)
+            for predecessor_id in job.predecessors:
+                self.successors[jobs[predecessor_id]].append(job)
         self.sources = []
         self.sinks = []
         self.sort()
-
-    def add_job(self, job):
-        self.jobs.append(job)
-
-    def add_dependency(self, successor, predecessor):
-        self.predecessors[successor].append(predecessor)
-        self.successors[predecessor].append(successor)
 
     def sort(self):
         self.sources, self.sinks, self.jobs = topological_sort(self.jobs, self.successors)
