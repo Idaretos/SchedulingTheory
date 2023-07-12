@@ -164,7 +164,6 @@ def visualize_CPM(jobs, critical_path, outputpath=DEAFULT_PATH) -> None:
                 graph.add_edge(state, states[int(outgoing.id)], label="job " + str(outgoing), is_critical=(outgoing in critical_path), is_dummy=False)
             else:
                 graph.add_edge(state, states[int(outgoing.id)], label='dummy', is_critical=(state.is_critical and states[int(outgoing.id)].is_critical), is_dummy=True)
-            edge_labels = nx.get_edge_attributes(graph, 'label')
 
     # Draw the graph
     plt.figure(figsize=(8, 6))
