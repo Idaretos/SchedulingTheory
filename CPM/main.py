@@ -9,7 +9,7 @@ def main():
     if len(sys.argv) > 2:
         outputpath = sys.argv[2]
     else:
-        inputpath = 'SchedulingTheory/CPM/input/lecture.json'
+        inputpath = 'SchedulingTheory/CPM/input/example.json'
         outputpath = DEAFULT_PATH
 
     with open(inputpath, 'r') as f:

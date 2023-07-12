@@ -5,7 +5,6 @@ import os
 from networkx.drawing.nx_agraph import graphviz_layout
 from collections import defaultdict
 from CPM import *
-import json, sys
 
 # Define a class State to represent each state with its incoming and outgoing jobs
 class State(object):
@@ -26,6 +25,16 @@ class State(object):
         if tmpset != set(self.outgoing) and tmpset != set([]):
             return True
         return False
+    
+    def outgoing_equals(self, other) -> bool:
+        if isinstance(other, State):
+            return (self.id == other.id and self.outgoing == other.outgoing)
+        return False
+
+    def incoming_equals(self, other) -> bool:
+        if isinstance(other, State):
+            return self.outgoing == other.outgoing
+        return False
 
     def __str__(self) -> str:
         return f"State {self.id}"
@@ -35,7 +44,10 @@ class State(object):
     
     def __eq__(self, other) -> bool:
         if isinstance(other, State):
-            return (self.id == other.id and self.outgoing == other.outgoing)
+            return (self.id == other.id
+                    and self.is_critical == other.is_critical
+                    and self.incoming == other.incoming
+                    and self.outgoing == other.outgoing)
         return False
     
     def __hash__(self) -> int:
@@ -43,31 +55,64 @@ class State(object):
 
     
 class States(object):
-    def __init__(self, states) -> None:
+    def __init__(self, states, jobs, critical_path) -> None:
         self.states = states
-        self.shared_outgoing = self.find_shared_outgoing()
-        self.dummies = []
-        for key in self.shared_outgoing.keys():
-            states = self.shared_outgoing[key]
+        shared_outgoing = self.find_shared_outgoing()
+        
+        for states in shared_outgoing:
+            shared_predecessor = self.find_shared_predecessor(states, jobs)
+            if len(shared_predecessor) > 0:
+                for shared_states in shared_predecessor:
+                    state = shared_states[0]
+                    for st in shared_states:
+                        if st.is_critical:
+                            state = st
+                            break
+                    for st in shared_states:
+                        if st != state:
+                            dummy = Job(f'{state.id}', 0, [], is_dummy=True)
+                            st.outgoing = [dummy]
+
+        shared_outgoing = self.find_shared_outgoing()
+        for states in shared_outgoing:
             state = states[0]
             for st in states:
                 if st.is_critical:
                     state = st
+                    break
             for i in range(0, len(states)):
                 if states[i] != state:
                     state.add_incoming(states[i].incoming[0])
                 for k, v in self.states.items():
-                    if self.states[k] == states[i]:
+                    if self.states[k].outgoing_equals(states[i]):
                         self.states[k] = state
+        for state in self.states.values():
             for dummy_state in self.states.values():
                 if state.subset(dummy_state):
+                    if dummy_state.outgoing[0].is_dummy:
+                        continue
                     state.outgoing = list(set(state.outgoing) - set(dummy_state.outgoing))
                     dummy = Job(f'{dummy_state.id}', 0, [], is_dummy=True)
+                    if len([x for x in state.incoming if x in critical_path])*len([x for x in dummy_state.outgoing if x in critical_path]) > 0:
+                        critical_path.append(dummy)
+                        dummy_state.is_critical = True
                     state.add_outgoing(dummy)
-                    self.dummies.append(dummy)
-        
+
     def states_dict(self):
         return self.states
+    
+    @staticmethod
+    def find_shared_predecessor(states, jobs) -> dict:
+        # Create a dictionary where the keys are the incoming jobs, and the values are lists of states
+        incoming_dict = defaultdict(list)
+        for state in states:
+            # Convert the list of incoming jobs to a tuple so it can be used as a dictionary key
+            predecessor_tuple = tuple(sorted(jobs[int(state.id)].predecessors))
+            incoming_dict[predecessor_tuple].append(state)
+
+        # Find and return only those incoming jobs that are shared by more than one state
+        shared_predecessor = [states for predecessor, states in incoming_dict.items() if len(states) > 1]
+        return shared_predecessor
 
     def find_shared_outgoing(self) -> dict:
         # Create a dictionary where the keys are the outgoing jobs, and the values are lists of states
@@ -78,7 +123,7 @@ class States(object):
             outgoing_dict[outgoing_tuple].append(state)
 
         # Find and return only those outgoing jobs that are shared by more than one state
-        shared_outgoing = {outgoing: states for outgoing, states in outgoing_dict.items() if len(states) > 1}
+        shared_outgoing = [states for outgoing, states in outgoing_dict.items() if len(states) > 1]
         return shared_outgoing
 
 
@@ -98,13 +143,13 @@ def visualize_CPM(jobs, critical_path, outputpath=DEAFULT_PATH) -> None:
         is_critical = False
         if job in critical_path:
             is_critical = True
-        states[job] = State(job.id, is_critical)
-        states[job].add_incoming(job)
+        states[int(job.id)] = State(job.id, is_critical)
+        states[int(job.id)].add_incoming(job)
     for job in jobs.values():
         for predecessor_id in job.predecessors:
-            states[jobs[predecessor_id]].add_outgoing(job)
+            states[predecessor_id].add_outgoing(job)
 
-    st = States(states)
+    st = States(states, jobs, critical_path)
     states = st.states
 
     # Create a directed graph
@@ -116,9 +161,9 @@ def visualize_CPM(jobs, critical_path, outputpath=DEAFULT_PATH) -> None:
     for state in states.values():
         for outgoing in state.outgoing:
             if not outgoing.is_dummy:
-                graph.add_edge(state, states[jobs[int(outgoing.id)]], label="job " + str(outgoing), is_critical=(outgoing in critical_path), is_dummy=False)
+                graph.add_edge(state, states[int(outgoing.id)], label="job " + str(outgoing), is_critical=(outgoing in critical_path), is_dummy=False)
             else:
-                graph.add_edge(state, states[jobs[int(outgoing.id)]], label='dummy', is_critical=(state.is_critical and states[jobs[int(outgoing.id)]].is_critical), is_dummy=True)
+                graph.add_edge(state, states[int(outgoing.id)], label='dummy', is_critical=(state.is_critical and states[int(outgoing.id)].is_critical), is_dummy=True)
             edge_labels = nx.get_edge_attributes(graph, 'label')
 
     # Draw the graph
@@ -160,11 +205,3 @@ def visualize_CPM(jobs, critical_path, outputpath=DEAFULT_PATH) -> None:
     plt.savefig(outputpath+'/CPM.png')
     plt.show()
 
-
-def find_subsets(superlist):
-    results = {}
-    for i, A in enumerate(superlist):
-        for j, B in enumerate(superlist):
-            if i != j and set(A).issubset(B):
-                results[A] = B
-    return results

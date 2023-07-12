@@ -14,7 +14,10 @@ class Job:
     
     def __eq__(self, other):
         if isinstance(other, Job):
-            return self.id == other.id
+            return (self.id == other.id
+                    and self.duration == other.duration
+                    and self.predecessors == other.predecessors
+                    and self.is_dummy == other.is_dummy)
         return False
 
     def __ne__(self, other):
