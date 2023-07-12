@@ -198,12 +198,12 @@ def visualize_CPM(jobs, critical_path, outputpath=DEAFULT_PATH) -> None:
     plt.title('Critical Path Method')
     if not os.path.exists(outputpath):
         os.makedirs(outputpath)
+    c_line = mlines.Line2D([], [], color='red', marker='_', markersize=15, label='Critical Paths')
     j_line = mlines.Line2D([], [], color='black', marker='_', markersize=15, label='Jn: Job n')
     d_line = mlines.Line2D([], [], color='lightgray', marker='_', markersize=15, label='D: Dummy Job')
 
     # Add the legend to the plot
-    plt.legend(handles=[j_line, d_line], loc='lower right')
+    plt.legend(handles=[c_line, j_line, d_line], loc='lower right')
 
     plt.savefig(outputpath+'/CPM.png')
     plt.show()
-
