@@ -1,6 +1,7 @@
 import pygraphviz as pgv
 import networkx as nx
 import matplotlib.pyplot as plt
+import matplotlib.lines as mlines
 import os
 from networkx.drawing.nx_agraph import graphviz_layout
 from collections import defaultdict
@@ -197,6 +198,12 @@ def visualize_CPM(jobs, critical_path, outputpath=DEAFULT_PATH) -> None:
     plt.title('Critical Path Method')
     if not os.path.exists(outputpath):
         os.makedirs(outputpath)
+    j_line = mlines.Line2D([], [], color='black', marker='_', markersize=15, label='Jn: Job n')
+    d_line = mlines.Line2D([], [], color='lightgray', marker='_', markersize=15, label='D: Dummy Job')
+
+    # Add the legend to the plot
+    plt.legend(handles=[j_line, d_line], loc='lower right')
+
     plt.savefig(outputpath+'/CPM.png')
     plt.show()
 
