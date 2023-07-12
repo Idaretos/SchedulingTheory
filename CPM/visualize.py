@@ -103,14 +103,11 @@ class States(object):
     
     @staticmethod
     def find_shared_predecessor(states, jobs) -> dict:
-        # Create a dictionary where the keys are the incoming jobs, and the values are lists of states
         incoming_dict = defaultdict(list)
         for state in states:
-            # Convert the list of incoming jobs to a tuple so it can be used as a dictionary key
             predecessor_tuple = tuple(sorted(jobs[int(state.id)].predecessors))
             incoming_dict[predecessor_tuple].append(state)
 
-        # Find and return only those incoming jobs that are shared by more than one state
         shared_predecessor = [states for predecessor, states in incoming_dict.items() if len(states) > 1]
         return shared_predecessor
 
@@ -167,7 +164,6 @@ def visualize_CPM(jobs, critical_path, outputpath=DEAFULT_PATH) -> None:
 
     # Draw the graph
     plt.figure(figsize=(8, 6))
-    # pos = nx.spring_layout(graph, seed=3)  # positions for all nodes - seed for reproducibility
     pos = graphviz_layout(graph, prog='dot')
 
     # Draw edge labels within the edge names
