@@ -158,12 +158,12 @@ def visualize_CPM(jobs, critical_path, outputpath=DEAFULT_PATH) -> None:
     for state in states.values():
         for outgoing in state.outgoing:
             if not outgoing.is_dummy:
-                graph.add_edge(state, states[int(outgoing.id)], label="job " + str(outgoing), is_critical=(outgoing in critical_path), is_dummy=False)
+                graph.add_edge(state, states[int(outgoing.id)], label=f"J{str(outgoing)}: {outgoing.duration}", is_critical=(outgoing in critical_path), is_dummy=False)
             else:
-                graph.add_edge(state, states[int(outgoing.id)], label='dummy', is_critical=(state.is_critical and states[int(outgoing.id)].is_critical), is_dummy=True)
+                graph.add_edge(state, states[int(outgoing.id)], label='D: 0', is_critical=(state.is_critical and states[int(outgoing.id)].is_critical), is_dummy=True)
 
     # Draw the graph
-    plt.figure(figsize=(8, 6))
+    plt.figure(figsize=(12, 6))
     pos = graphviz_layout(graph, prog='dot')
 
     # Draw edge labels within the edge names
