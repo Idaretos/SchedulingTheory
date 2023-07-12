@@ -1,5 +1,6 @@
 import sys
 import json
+from os.path import realpath, dirname
 from CPM import *
 from visualize import visualize_CPM, DEAFULT_PATH
 
@@ -9,7 +10,7 @@ def main():
     if len(sys.argv) > 2:
         outputpath = sys.argv[2]
     else:
-        inputpath = 'SchedulingTheory/CPM/input/example.json'
+        inputpath = dirname(realpath(__file__))+'/input/example.json'
         outputpath = DEAFULT_PATH
 
     with open(inputpath, 'r') as f:

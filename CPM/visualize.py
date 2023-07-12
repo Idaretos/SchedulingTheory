@@ -188,8 +188,12 @@ def visualize_CPM(jobs, critical_path, outputpath=DEAFULT_PATH) -> None:
     nx.draw_networkx_nodes(graph, pos, nodelist=non_critical_nodes, node_color='lightblue', node_size=500)
 
     # Draw critical nodes
-    critical_path_nodes = [node for node in graph.nodes() if node.is_critical]
+    critical_path_nodes = [node for node in graph.nodes() if node.is_critical and not (len(node.incoming) == 0 or len(node.outgoing) == 0)]
     nx.draw_networkx_nodes(graph, pos, nodelist=critical_path_nodes, node_color='red', node_size=500)
+
+    # Draw starting, ending nodes
+    polar_nodes = [node for node in graph.nodes() if (len(node.incoming) == 0 or len(node.outgoing) == 0)]
+    nx.draw_networkx_nodes(graph, pos, nodelist=polar_nodes, node_color='darkblue', node_size=500)
 
     # Draw node labels (earliest time and latest time)
     node_labels = nx.get_node_attributes(graph, 'label')
