@@ -24,7 +24,7 @@ def main():
     makespans = []
     critical_paths = defaultdict(int)
     tmp = {}
-    for i in range(1000):
+    for i in range(10000):
         jobs, CPM_results = cal(jobs_dict)
         earliest_start_time, earliest_finish_time, latest_start_time, latest_finish_time, slacks, critical_path, makespan = CPM_results
         makespans += [makespan]
@@ -47,8 +47,13 @@ def main():
 
 
     max_key = max(critical_paths, key=critical_paths.get)
-    print(max_key, critical_paths[max_key]/1000)
     jobs, CPM_results = tmp[max_key]
+
+    earliest_start_time, earliest_finish_time, latest_start_time, latest_finish_time, slacks, critical_path, makespan = CPM_results
+    print("Mode Critical Path:", critical_path)
+    print("Mode Makespan: ", round(makespan, 1))
+    print(f"Mode Path Proportion:  {critical_paths[max_key]/10}%")
+
     visualize_CPM(jobs, CPM_results)
 
 
