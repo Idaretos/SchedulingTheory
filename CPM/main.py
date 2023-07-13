@@ -17,14 +17,14 @@ def main():
         jobs_dict = json.load(f)
 
     # Convert the dictionary back to Job objects
-    jobs = {int(id): Job(**job_data) for id, job_data in jobs_dict.items()}
+    jobs = {id: Job(**job_data) for id, job_data in jobs_dict.items()}
 
     # Create the network and add jobs and dependencies
     network = Network(jobs)
 
     # Run the CPM algorithm
-    CPM_result = CPM(network)
-    earliest_start_time, earliest_finish_time, latest_start_time, latest_finish_time, slacks, critical_path, makespan = CPM_result
+    CPM_results = CPM(network)
+    earliest_start_time, earliest_finish_time, latest_start_time, latest_finish_time, slacks, critical_path, makespan = CPM_results
     # Print the results
     print("Earliest Start Time:", earliest_start_time)
     print("Earliest Finish Time:", earliest_finish_time)
@@ -34,7 +34,7 @@ def main():
     print("Critical Path:", critical_path)
     print("Makespan: ", makespan)
 
-    visualize_CPM(jobs, critical_path, outputpath)
+    visualize_CPM(jobs, CPM_results, outputpath)
 
 if __name__ == '__main__':
     main()

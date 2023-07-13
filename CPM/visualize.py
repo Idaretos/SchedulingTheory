@@ -106,7 +106,7 @@ class States(object):
     def find_shared_predecessor(states, jobs) -> dict:
         incoming_dict = defaultdict(list)
         for state in states:
-            predecessor_tuple = tuple(sorted(jobs[int(state.id)].predecessors))
+            predecessor_tuple = tuple(sorted(jobs[state.id].predecessors))
             incoming_dict[predecessor_tuple].append(state)
 
         shared_predecessor = [states for predecessor, states in incoming_dict.items() if len(states) > 1]
@@ -126,26 +126,28 @@ class States(object):
 
 
 DEAFULT_PATH = 'SchedulingTheory/CPM/output'
-def visualize_CPM(jobs, critical_path, outputpath=DEAFULT_PATH) -> None:
+def visualize_CPM(jobs, CPM_results, outputpath=DEAFULT_PATH) -> None:
     network = Network(jobs)
+    earliest_start_time, earliest_finish_time, latest_start_time, latest_finish_time, slacks, critical_path, makespan = CPM_results
+
 
     # Create a dictionary to store all states
-    states = {0: State(0, is_critical=True)}
+    states = {'0': State(0, is_critical=True)}
 
     # Add jobs with no predecessors starting from "state 0"
     for job in network.sources:
-        states[0].add_outgoing(job)
+        states['0'].add_outgoing(job)
 
     # Add the rest of the jobs
     for job in jobs.values():
         is_critical = False
         if job in critical_path:
             is_critical = True
-        states[int(job.id)] = State(job.id, is_critical)
-        states[int(job.id)].add_incoming(job)
+        states[job.id] = State(job.id, is_critical)
+        states[job.id].add_incoming(job)
     for job in jobs.values():
         for predecessor_id in job.predecessors:
-            states[predecessor_id].add_outgoing(job)
+            states[str(predecessor_id)].add_outgoing(job)
 
     st = States(states, jobs, critical_path)
     states = st.states
@@ -155,13 +157,16 @@ def visualize_CPM(jobs, critical_path, outputpath=DEAFULT_PATH) -> None:
 
     graph.graph['graph'] = {'rankdir': 'LR'}
 
+    for state in states.values():
+        graph.add_node(state, label=f'{earliest_start_time[job.id]}/{latest_start_time[job.id]}')
+
     # Add edges based on the states
     for state in states.values():
         for outgoing in state.outgoing:
             if not outgoing.is_dummy:
-                graph.add_edge(state, states[int(outgoing.id)], label=f"J{str(outgoing)}: {outgoing.duration}", is_critical=(outgoing in critical_path), is_dummy=False)
+                graph.add_edge(state, states[outgoing.id], label=f"J{str(outgoing)}: {outgoing.duration}", is_critical=(outgoing in critical_path), is_dummy=False)
             else:
-                graph.add_edge(state, states[int(outgoing.id)], label='D: 0', is_critical=(state.is_critical and states[int(outgoing.id)].is_critical), is_dummy=True)
+                graph.add_edge(state, states[outgoing.id], label='D: 0', is_critical=(state.is_critical and states[outgoing.id].is_critical), is_dummy=True)
 
     # Draw the graph
     plt.figure(figsize=(12, 6))

@@ -53,9 +53,9 @@ class Network:
         self.predecessors = defaultdict(list)
         self.successors = defaultdict(list)
         for job in self.jobs:
-            self.predecessors[job] += [jobs[i] for i in job.predecessors]
+            self.predecessors[job.id] += [jobs[str(i)] for i in job.predecessors]
             for predecessor_id in job.predecessors:
-                self.successors[jobs[predecessor_id]].append(job)
+                self.successors[str(predecessor_id)].append(job)
         self.sources = []
         self.sinks = []
         self.sort()
@@ -78,8 +78,8 @@ def topological_sort(jobs, successors) -> tuple:
 
     # Calculate in-degree for each job
     for job in jobs:
-        for successor in successors[job]:
-            in_degree[successor] += 1
+        for successor in successors[job.id]:
+            in_degree[successor.id] += 1
 
     # Find jobs with no incoming edges (in-degree = 0)
     sources = [job for job in jobs if job not in in_degree or in_degree[job] == 0]
@@ -92,13 +92,13 @@ def topological_sort(jobs, successors) -> tuple:
         sorted_order.append(job)
 
         # Decrement the in-degree of each successor and add to sources if in-degree becomes 0
-        for successor in successors[job]:
-            in_degree[successor] -= 1
-            if in_degree[successor] == 0:
+        for successor in successors[job.id]:
+            in_degree[successor.id] -= 1
+            if in_degree[successor.id] == 0:
                 sources.append(successor)
 
         # Check if the job is a sink (no outgoing edges)
-        if job not in successors or len(successors[job]) == 0:
+        if job not in successors or len(successors[job.id]) == 0:
             sinks.append(job)
 
     return sources_to_return, sinks, sorted_order
@@ -112,16 +112,16 @@ def calculate_earliest_times(network) -> tuple:
 
     # Calculate earliest start and finish times
     for job in network.sources:
-        earliest_start_time[job] = 0  # Initialize earliest start time to 0
+        earliest_start_time[job.id] = 0  # Initialize earliest start time to 0
 
     for job in jobs:
-        if job not in predecessors or len(predecessors[job]) == 0:
+        if job not in predecessors or len(predecessors[job.id]) == 0:
             # Job has no dependencies, set earliest finish time to its duration
-            earliest_finish_time[job] = job.duration
+            earliest_finish_time[job.id] = job.duration
         else:
             # Calculate earliest finish time as the maximum of earliest finish times of dependent jobs
-            earliest_start_time[job] = max(earliest_finish_time[predecessor] for predecessor in predecessors[job])
-            earliest_finish_time[job] = earliest_start_time[job] + job.duration
+            earliest_start_time[job.id] = max(earliest_finish_time[predecessor.id] for predecessor in predecessors[job.id])
+            earliest_finish_time[job.id] = earliest_start_time[job.id] + job.duration
 
     return earliest_start_time, earliest_finish_time
 
@@ -137,8 +137,8 @@ def calculate_latest_times(network, earliest_finish_time) -> tuple:
 
     # Calculate latest start and finish times
     for job in network.sinks:
-        latest_finish_time[job] = project_duration  # Initialize latest finish time to project duration
-        latest_start_time[job] = project_duration - job.duration
+        latest_finish_time[job.id] = project_duration  # Initialize latest finish time to project duration
+        latest_start_time[job.id] = project_duration - job.duration
 
     jobs.reverse()
     for job in jobs:
@@ -146,16 +146,16 @@ def calculate_latest_times(network, earliest_finish_time) -> tuple:
         if job in network.sinks:
             continue
         else:
-            latest_finish_time[job] = min(latest_start_time[successor] for successor in successors[job])
-            latest_start_time[job] = latest_finish_time[job] - job.duration
+            latest_finish_time[job.id] = min(latest_start_time[successor.id] for successor in successors[job.id])
+            latest_start_time[job.id] = latest_finish_time[job.id] - job.duration
     
     return dict(reversed(list(latest_start_time.items()))),  dict(reversed(list(latest_finish_time.items())))
 
 
-def calculate_slacks(earliest_start_time, latest_start_time) -> dict:
+def calculate_slacks(jobs, earliest_start_time, latest_start_time) -> dict:
     slacks = {}
-    for job in earliest_start_time:
-        slack_time = latest_start_time[job] - earliest_start_time[job]
+    for job in jobs:
+        slack_time = latest_start_time[job.id] - earliest_start_time[job.id]
         slacks[job] = slack_time
     return slacks
 
@@ -168,7 +168,7 @@ def calculate_critical_path(slacks) -> list:
 def CPM(network) -> tuple:
     earliest_start_time, earliest_finish_time = calculate_earliest_times(network)
     latest_start_time, latest_finish_time = calculate_latest_times(network, earliest_finish_time)
-    slacks = calculate_slacks(earliest_start_time, latest_start_time)
+    slacks = calculate_slacks(network.jobs, earliest_start_time, latest_start_time)
     critical_path = calculate_critical_path(slacks)
     makespan = max(earliest_finish_time.values())
     return earliest_start_time, earliest_finish_time, latest_start_time, latest_finish_time, slacks, critical_path, makespan
