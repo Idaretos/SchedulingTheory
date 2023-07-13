@@ -37,11 +37,13 @@ def main():
     sns.kdeplot(makespans, fill=True)
     plt.title('Density Plot of Makespans')
     plt.xlabel('Makespan')
+    plt.savefig(DEAFULT_PATH+'/density_plot.png')
 
     plt.figure()
     sns.boxplot(makespans, color='lightblue')
     plt.title('Box Plot of Makespans')
     plt.xlabel('Makespan')
+    plt.savefig(DEAFULT_PATH+'/box_plot.png')
 
 
     max_key = max(critical_paths, key=critical_paths.get)

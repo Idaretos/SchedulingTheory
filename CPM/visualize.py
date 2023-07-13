@@ -237,5 +237,5 @@ def visualize_CPM(jobs, CPM_results, outputpath=DEAFULT_PATH) -> None:
     # Add the legend to the plot
     plt.legend(handles=[c_line, j_line, d_line], loc='lower left', frameon=False)
 
-    plt.savefig(outputpath+'/PERT.png')
+    plt.savefig(outputpath+'/CPM.png')
     plt.show()
