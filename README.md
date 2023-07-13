@@ -7,7 +7,7 @@ This repository contains code implementations of various scheduling algorithms, 
 Currently, the repository contains the following implementations:
 
 - [Critical Path Method (CPM)](./CPM/)
-- [Project Evaluation and Review Technique](./PERT/)
+- [Project Evaluation and Review Technique (PERT)](./PERT/)
 
 The Critical Path Method (CPM) is a project modeling technique used in project management to identify critical and non-critical tasks and prevent schedule conflicts and bottlenecks.
 
