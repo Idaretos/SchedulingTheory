@@ -23,8 +23,8 @@ def main():
     network = Network(jobs)
 
     # Run the CPM algorithm
-    earliest_start_time, earliest_finish_time, latest_start_time, latest_finish_time, slacks, critical_path = cpm_algorithm(network)
-
+    CPM_result = CPM(network)
+    earliest_start_time, earliest_finish_time, latest_start_time, latest_finish_time, slacks, critical_path, makespan = CPM_result
     # Print the results
     print("Earliest Start Time:", earliest_start_time)
     print("Earliest Finish Time:", earliest_finish_time)
@@ -32,7 +32,7 @@ def main():
     print("Latest Finish Time:", latest_finish_time)
     print("Slacks:", slacks)
     print("Critical Path:", critical_path)
-    print("Makespan: ", max(earliest_finish_time.values()))
+    print("Makespan: ", makespan)
 
     visualize_CPM(jobs, critical_path, outputpath)
 

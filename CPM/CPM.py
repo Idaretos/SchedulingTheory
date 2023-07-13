@@ -165,9 +165,10 @@ def calculate_critical_path(slacks) -> list:
     return critical_path
 
 
-def cpm_algorithm(network) -> tuple:
+def CPM(network) -> tuple:
     earliest_start_time, earliest_finish_time = calculate_earliest_times(network)
     latest_start_time, latest_finish_time = calculate_latest_times(network, earliest_finish_time)
     slacks = calculate_slacks(earliest_start_time, latest_start_time)
     critical_path = calculate_critical_path(slacks)
-    return earliest_start_time, earliest_finish_time, latest_start_time, latest_finish_time, slacks, critical_path
+    makespan = max(earliest_finish_time.values())
+    return earliest_start_time, earliest_finish_time, latest_start_time, latest_finish_time, slacks, critical_path, makespan
