@@ -15,11 +15,27 @@ class State(object):
         self.incoming = []
         self.outgoing = []
 
-    def add_incoming(self, job_id) -> None:
-        self.incoming.append(job_id)
+    def add_incoming(self, job) -> None:
+        self.incoming.append(job)
 
-    def add_outgoing(self, job_id) -> None:
-        self.outgoing.append(job_id)
+    def add_outgoing(self, job) -> None:
+        self.outgoing.append(job)
+
+    def done_time(self, earliest_finish_time, latest_finish_time):
+        eft = -1
+        lft = -1
+        for incoming in self.incoming:
+            if not incoming.is_dummy:
+                temp_eft = earliest_finish_time[incoming.id]
+                temp_lft = latest_finish_time[incoming.id]
+            else:
+                temp_eft, temp_lft = incoming.prev_state.done_time(earliest_finish_time, latest_finish_time)
+            if eft < temp_eft:
+                eft = temp_eft
+            if lft < temp_lft:
+                lft = temp_lft
+        return eft, lft
+                
 
     def subset(self, state) -> bool:
         tmpset =  set(self.outgoing) - set(state.outgoing)
@@ -71,8 +87,10 @@ class States(object):
                             break
                     for st in shared_states:
                         if st != state:
-                            dummy = Job(f'{state.id}', 0, [], is_dummy=True)
+                            dummy = Job(f'{state.id}', 0, [], is_dummy=True, prev_state=st)
                             st.outgoing = [dummy]
+                            state.add_incoming(dummy)
+                            pass
 
         shared_outgoing = self.find_shared_outgoing()
         for states in shared_outgoing:
@@ -93,11 +111,12 @@ class States(object):
                     if dummy_state.outgoing[0].is_dummy:
                         continue
                     state.outgoing = list(set(state.outgoing) - set(dummy_state.outgoing))
-                    dummy = Job(f'{dummy_state.id}', 0, [], is_dummy=True)
+                    dummy = Job(f'{dummy_state.id}', 0, [], is_dummy=True, prev_state=state)
                     if len([x for x in state.incoming if x in critical_path])*len([x for x in dummy_state.outgoing if x in critical_path]) > 0:
                         critical_path.append(dummy)
                         dummy_state.is_critical = True
                     state.add_outgoing(dummy)
+                    dummy_state.add_incoming(dummy)
 
     def states_dict(self):
         return self.states
@@ -132,7 +151,7 @@ def visualize_CPM(jobs, CPM_results, outputpath=DEAFULT_PATH) -> None:
 
 
     # Create a dictionary to store all states
-    states = {'0': State(0, is_critical=True)}
+    states = {'0': State('0', is_critical=True)}
 
     # Add jobs with no predecessors starting from "state 0"
     for job in network.sources:
@@ -147,7 +166,7 @@ def visualize_CPM(jobs, CPM_results, outputpath=DEAFULT_PATH) -> None:
         states[job.id].add_incoming(job)
     for job in jobs.values():
         for predecessor_id in job.predecessors:
-            states[str(predecessor_id)].add_outgoing(job)
+            states[predecessor_id].add_outgoing(job)
 
     st = States(states, jobs, critical_path)
     states = st.states
@@ -158,7 +177,11 @@ def visualize_CPM(jobs, CPM_results, outputpath=DEAFULT_PATH) -> None:
     graph.graph['graph'] = {'rankdir': 'LR'}
 
     for state in states.values():
-        graph.add_node(state, label=f'{earliest_start_time[job.id]}/{latest_start_time[job.id]}')
+        if state.id == '0':
+            graph.add_node(state, label='0/0')
+        else:
+            eft, lft = state.done_time(earliest_finish_time, latest_finish_time)
+            graph.add_node(state, label=f'{eft}/{lft}')
 
     # Add edges based on the states
     for state in states.values():
@@ -202,7 +225,7 @@ def visualize_CPM(jobs, CPM_results, outputpath=DEAFULT_PATH) -> None:
 
     # Draw node labels (earliest time and latest time)
     node_labels = nx.get_node_attributes(graph, 'label')
-    nx.draw_networkx_labels(graph, pos, labels=node_labels, font_size=10)
+    nx.draw_networkx_labels(graph, pos, labels=node_labels, font_size=6, font_color='white')
 
     plt.title('Critical Path Method')
     if not os.path.exists(outputpath):

@@ -3,11 +3,13 @@ from copy import deepcopy
 
 
 class Job:
-    def __init__(self, id, duration, predecessors, is_dummy=False) -> None:
+    def __init__(self, id, duration, predecessors, is_dummy=False, prev_state=None) -> None:
         self.id = id
         self.duration = duration
-        self.predecessors = predecessors
+        self.predecessors = [str(predecessor) for predecessor in predecessors]
         self.is_dummy = is_dummy
+        if self.is_dummy:
+            self.prev_state = prev_state
 
     def __repr__(self) -> str:
         return self.id
@@ -53,9 +55,9 @@ class Network:
         self.predecessors = defaultdict(list)
         self.successors = defaultdict(list)
         for job in self.jobs:
-            self.predecessors[job.id] += [jobs[str(i)] for i in job.predecessors]
+            self.predecessors[job.id] += [jobs[i] for i in job.predecessors]
             for predecessor_id in job.predecessors:
-                self.successors[str(predecessor_id)].append(job)
+                self.successors[predecessor_id].append(job)
         self.sources = []
         self.sinks = []
         self.sort()
@@ -82,8 +84,8 @@ def topological_sort(jobs, successors) -> tuple:
             in_degree[successor.id] += 1
 
     # Find jobs with no incoming edges (in-degree = 0)
-    sources = [job for job in jobs if job not in in_degree or in_degree[job] == 0]
-    sources_to_return = [job for job in jobs if job not in in_degree or in_degree[job] == 0]
+    sources = [job for job in jobs if job.id not in in_degree or in_degree[job.id] == 0]
+    sources_to_return = [job for job in jobs if job.id not in in_degree or in_degree[job.id] == 0]
     sinks = []
 
     # Perform topological sort
@@ -98,7 +100,7 @@ def topological_sort(jobs, successors) -> tuple:
                 sources.append(successor)
 
         # Check if the job is a sink (no outgoing edges)
-        if job not in successors or len(successors[job.id]) == 0:
+        if job.id not in successors or len(successors[job.id]) == 0:
             sinks.append(job)
 
     return sources_to_return, sinks, sorted_order
@@ -115,7 +117,7 @@ def calculate_earliest_times(network) -> tuple:
         earliest_start_time[job.id] = 0  # Initialize earliest start time to 0
 
     for job in jobs:
-        if job not in predecessors or len(predecessors[job.id]) == 0:
+        if job in network.sources:
             # Job has no dependencies, set earliest finish time to its duration
             earliest_finish_time[job.id] = job.duration
         else:
