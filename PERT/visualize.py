@@ -5,6 +5,7 @@ import matplotlib.lines as mlines
 import os
 from networkx.drawing.nx_agraph import graphviz_layout
 from collections import defaultdict
+from numpy import round as rd
 from CPM import *
 
 # Define a class State to represent each state with its incoming and outgoing jobs
@@ -176,20 +177,13 @@ def visualize_CPM(jobs, CPM_results, outputpath=DEAFULT_PATH) -> None:
 
     graph.graph['graph'] = {'rankdir': 'LR'}
 
-    for state in states.values():
-        if state.id == '0':
-            graph.add_node(state, label='0/0')
-        else:
-            eft, lft = state.done_time(earliest_finish_time, latest_finish_time)
-            graph.add_node(state, label=f'{eft}/{lft}')
-
     # Add edges based on the states
     for state in states.values():
         for outgoing in state.outgoing:
             if not outgoing.is_dummy:
-                graph.add_edge(state, states[outgoing.id], label=f"J{str(outgoing)}: {outgoing.duration}", is_critical=(outgoing in critical_path), is_dummy=False)
+                graph.add_edge(state, states[outgoing.id], label=f"J{str(outgoing)}", is_critical=(outgoing in critical_path), is_dummy=False)
             else:
-                graph.add_edge(state, states[outgoing.id], label='D: 0', is_critical=(state.is_critical and states[outgoing.id].is_critical), is_dummy=True)
+                graph.add_edge(state, states[outgoing.id], label='D', is_critical=(state.is_critical and states[outgoing.id].is_critical), is_dummy=True)
 
     # Draw the graph
     plt.figure(figsize=(12, 6))
@@ -237,5 +231,5 @@ def visualize_CPM(jobs, CPM_results, outputpath=DEAFULT_PATH) -> None:
     # Add the legend to the plot
     plt.legend(handles=[c_line, j_line, d_line], loc='lower left', frameon=False)
 
-    plt.savefig(outputpath+'/PERT.png')
+    plt.savefig(outputpath+'/CPM.png')
     plt.show()

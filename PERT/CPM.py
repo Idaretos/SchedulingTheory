@@ -1,6 +1,5 @@
 from collections import defaultdict
-from copy import deepcopy
-
+import numpy as np
 
 class Job:
     def __init__(self, id, duration, predecessors, is_dummy=False, prev_state=None) -> None:
@@ -163,7 +162,7 @@ def calculate_slacks(jobs, earliest_start_time, latest_start_time) -> dict:
 
 
 def calculate_critical_path(slacks) -> list:
-    critical_path = [job for job, slack_time in slacks.items() if slack_time == 0]
+    critical_path = [job for job, slack_time in slacks.items() if np.round(slack_time, 1) == 0.0]
     return sorted(critical_path, key=(lambda x : int(x.id)))
 
 

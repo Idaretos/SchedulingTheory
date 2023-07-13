@@ -50,3 +50,4 @@ This project requires the following Python libraries:
 - `matplotlib`
 - `pygraphviz`
 - `collections`
+- `json`
