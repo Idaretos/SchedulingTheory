@@ -1,11 +1,9 @@
-import pygraphviz as pgv
 import networkx as nx
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 import os
 from networkx.drawing.nx_agraph import graphviz_layout
 from collections import defaultdict
-from numpy import round as rd
 from CPM import *
 
 # Define a class State to represent each state with its incoming and outgoing jobs

@@ -1,6 +1,4 @@
 from collections import defaultdict
-from copy import deepcopy
-
 
 class Job:
     def __init__(self, id, duration, predecessors, is_dummy=False, prev_state=None) -> None:
@@ -68,12 +66,6 @@ class Network:
     def get_jobs(self) -> list:
         return self.jobs
 
-    def get_predecessors(self) -> defaultdict:
-        return self.predecessors
-    
-    def get_successors(self) -> defaultdict:
-        return self.successors
-
 def topological_sort(jobs, successors) -> tuple:
     in_degree = defaultdict(int)
     sorted_order = []
@@ -107,7 +99,7 @@ def topological_sort(jobs, successors) -> tuple:
 
 def calculate_earliest_times(network) -> tuple:
     jobs = network.get_jobs()
-    predecessors = network.get_predecessors()
+    predecessors = network.predecessors
 
     earliest_start_time = {}
     earliest_finish_time = {}
@@ -130,7 +122,7 @@ def calculate_earliest_times(network) -> tuple:
 
 def calculate_latest_times(network, earliest_finish_time) -> tuple:
     jobs = network.get_jobs()
-    successors = network.get_successors()
+    successors = network.successors
 
     latest_start_time = {}
     latest_finish_time = {}
