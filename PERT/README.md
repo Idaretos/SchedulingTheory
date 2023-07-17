@@ -14,26 +14,26 @@ This project provides an implementation of the Project Evaluation and Review Tec
 
 ## Usage
 
-To use this program, you must first provide a json file with the job data.
+To use this program, you must first provide a csv file with the job data.
 Here is an example of the data file format:
 
-```json
-{
-    "1": { "id": "1", "optimistic": 2, "normal": 5, "pessimistic": 6, "predecessors": [] },
-    "2": { "id": "2", "optimistic": 2, "normal": 6, "pessimistic": 9, "predecessors": [1] },
-    "3": { "id": "3", "optimistic": 4, "normal": 9, "pessimistic": 10, "predecessors": [1] },
-    "4": { "id": "4", "optimistic": 5, "normal": 12, "pessimistic": 18, "predecessors": [2] },
-    "5": { "id": "5", "optimistic": 1, "normal": 7, "pessimistic": 8, "predecessors": [3] },
-    "6": { "id": "6", "optimistic": 5, "normal": 12, "pessimistic": 16, "predecessors": [3] },
-    "7": { "id": "7", "optimistic": 9, "normal": 10, "pessimistic": 11, "predecessors": [4] },
-    "8": { "id": "8", "optimistic": 5, "normal": 6, "pessimistic": 10, "predecessors": [5, 6] }, 
-    "9": { "id": "9", "optimistic": 3, "normal": 10, "pessimistic": 15, "predecessors": [5, 6] },
-    "10": { "id": "10", "optimistic": 9, "normal": 9, "pessimistic": 20, "predecessors": [7] },
-    "11": { "id": "11", "optimistic": 5, "normal": 7, "pessimistic": 9, "predecessors": [8, 9] },
-    "12": { "id": "12", "optimistic": 3, "normal": 8, "pessimistic": 10, "predecessors": [10, 11] },
-    "13": { "id": "13", "optimistic": 6, "normal": 7, "pessimistic": 14, "predecessors": [11] },
-    "14": { "id": "14", "optimistic": 4, "normal": 5, "pessimistic": 7, "predecessors": [12, 13] }
-}
+```csv
+|    | id | optimistic | most_likely | pessimistic | predecessors |
+|---:|---:|-----------:|------------:|------------:|:-------------|
+|  0 |  1 |          2 |           5 |           6 | []           |
+|  1 |  2 |          2 |           6 |           9 | [1]          |
+|  2 |  3 |          4 |           9 |          10 | [1]          |
+|  3 |  4 |          5 |          12 |          18 | [2]          |
+|  4 |  5 |          1 |           7 |           8 | [3]          |
+|  5 |  6 |          5 |          12 |          16 | [3]          |
+|  6 |  7 |          9 |          10 |          11 | [4]          |
+|  7 |  8 |          5 |           6 |          10 | [5, 6]       |
+|  8 |  9 |          3 |          10 |          15 | [5, 6]       |
+|  9 | 10 |          9 |           9 |          20 | [7]          |
+| 10 | 11 |          5 |           7 |           9 | [8, 9]       |
+| 11 | 12 |          3 |           8 |          10 | [10, 11]     |
+| 12 | 13 |          6 |           7 |          14 | [11]         |
+| 13 | 14 |          4 |           5 |           7 | [12, 13]     |
 ```
 
 Each job is represented by a dictionary where the key is the job id and the value is another dictionary with the job's properties. The job's properties include its duration, an array of its predecessors (other jobs that need to be completed before this job can start), and the variance in the duration of the job.
