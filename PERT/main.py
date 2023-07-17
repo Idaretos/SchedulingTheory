@@ -24,12 +24,14 @@ def main():
     makespans = []
     critical_paths = defaultdict(int)
     tmp = {}
+    tmp_makespans = defaultdict(list)
     for i in range(10000):
         jobs, CPM_results = cal(jobs_dict)
         earliest_start_time, earliest_finish_time, latest_start_time, latest_finish_time, slacks, critical_path, makespan = CPM_results
         makespans += [makespan]
         critical_paths[str(critical_path)] += 1
         tmp[str(critical_path)] = (jobs, CPM_results)
+        tmp_makespans[str(critical_path)].append(makespan)
 
     plt.figure()
     mean_makespan = np.mean(makespans)
@@ -51,7 +53,7 @@ def main():
 
     earliest_start_time, earliest_finish_time, latest_start_time, latest_finish_time, slacks, critical_path, makespan = CPM_results
     print("Mode Critical Path:", critical_path)
-    print("Mode Makespan: ", round(makespan, 1))
+    print("Mode Makespan: ", round(np.average(tmp_makespans[max_key]), 1))
     print(f"Mode Path Proportion:  {critical_paths[max_key]/100}%")
 
     visualize_CPM(jobs, CPM_results)
