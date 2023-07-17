@@ -168,7 +168,7 @@ def visualize_CPM(jobs, CPM_results, outputpath=DEAFULT_PATH) -> None:
             states[predecessor_id].add_outgoing(job)
 
     st = States(states, jobs, critical_path)
-    states = st.__states
+    states = st.states_dict()
 
     # Create a directed graph
     graph = nx.DiGraph()

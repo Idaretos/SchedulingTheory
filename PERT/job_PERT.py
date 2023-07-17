@@ -9,7 +9,7 @@ class PJob(Job):
 def calculate_duration(optimistic, most_likely, pessimistic):
     mean = (optimistic + 4*most_likely + pessimistic)/6
     std_dev = np.absolute((pessimistic-optimistic)/6)
-    duration = np.random.most_likely(mean, std_dev)
+    duration = np.random.normal(mean, std_dev)
     if duration < optimistic:
         duration = optimistic
     elif duration > pessimistic:

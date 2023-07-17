@@ -1,5 +1,6 @@
 import sys
-import json
+import pandas as pd
+import ast
 from os.path import realpath, dirname
 from CPM import *
 from visualize import visualize_CPM, DEAFULT_PATH
@@ -10,14 +11,25 @@ def main():
     if len(sys.argv) > 2:
         outputpath = sys.argv[2]
     else:
-        inputpath = dirname(realpath(__file__))+'/input/example.json'
+        inputpath = dirname(realpath(__file__))+'/input/example.csv'
         outputpath = DEAFULT_PATH
 
-    with open(inputpath, 'r') as f:
-        jobs_dict = json.load(f)
+    df = pd.read_csv(inputpath)
 
-    # Convert the dictionary back to Job objects
+    # Convert the "predecessors" column to a list
+    df['predecessors'] = df['predecessors'].apply(ast.literal_eval)
+    df['id'] = df['id'].apply(str)
+    df.drop('Unnamed: 0', axis=1, inplace=True)
+
+    # Convert the DataFrame to a dictionary
+    jobs_dict = df.to_dict('index')
+    
+    # Convert the keys to 'id'
+    jobs_dict = {value['id']: value for key, value in jobs_dict.items()}
+
+    # Convert the dictionary to Job objects
     jobs = {id: Job(**job_data) for id, job_data in jobs_dict.items()}
+
 
     # Create the network and add jobs and dependencies
     network = Network(jobs)
