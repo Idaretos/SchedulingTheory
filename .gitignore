@@ -161,4 +161,5 @@ cython_debug/
 .DS_Store
 */.DS_Store
 */input/*
-!*/input/example.*
+*/output/*
+!**/*example*
