@@ -72,11 +72,11 @@ class State(object):
     
 class States(object):
     def __init__(self, states, jobs, critical_path) -> None:
-        self.states = states
-        shared_outgoing = self.find_shared_outgoing()
+        self.__states = states
+        shared_outgoing = self.__find_shared_outgoing()
         
         for states in shared_outgoing:
-            shared_predecessor = self.find_shared_predecessor(states, jobs)
+            shared_predecessor = self.__find_shared_predecessor(states, jobs)
             if len(shared_predecessor) > 0:
                 for shared_states in shared_predecessor:
                     state = shared_states[0]
@@ -91,7 +91,7 @@ class States(object):
                             state.add_incoming(dummy)
                             pass
 
-        shared_outgoing = self.find_shared_outgoing()
+        shared_outgoing = self.__find_shared_outgoing()
         for states in shared_outgoing:
             state = states[0]
             for st in states:
@@ -101,11 +101,11 @@ class States(object):
             for i in range(0, len(states)):
                 if states[i] != state:
                     state.add_incoming(states[i].incoming[0])
-                for k, v in self.states.items():
-                    if self.states[k].outgoing_equals(states[i]):
-                        self.states[k] = state
-        for state in self.states.values():
-            for dummy_state in self.states.values():
+                for k, v in self.__states.items():
+                    if self.__states[k].outgoing_equals(states[i]):
+                        self.__states[k] = state
+        for state in self.__states.values():
+            for dummy_state in self.__states.values():
                 if state.subset(dummy_state):
                     if dummy_state.outgoing[0].is_dummy:
                         continue
@@ -118,10 +118,10 @@ class States(object):
                     dummy_state.add_incoming(dummy)
 
     def states_dict(self):
-        return self.states
+        return self.__states
     
     @staticmethod
-    def find_shared_predecessor(states, jobs) -> dict:
+    def __find_shared_predecessor(states, jobs) -> dict:
         incoming_dict = defaultdict(list)
         for state in states:
             predecessor_tuple = tuple(sorted(jobs[state.id].predecessors))
@@ -130,10 +130,10 @@ class States(object):
         shared_predecessor = [states for predecessor, states in incoming_dict.items() if len(states) > 1]
         return shared_predecessor
 
-    def find_shared_outgoing(self) -> dict:
+    def __find_shared_outgoing(self) -> dict:
         # Create a dictionary where the keys are the outgoing jobs, and the values are lists of states
         outgoing_dict = defaultdict(list)
-        for state in self.states.values():
+        for state in self.__states.values():
             # Convert the list of outgoing jobs to a tuple so it can be used as a dictionary key
             outgoing_tuple = tuple(sorted(state.outgoing))
             outgoing_dict[outgoing_tuple].append(state)
@@ -168,7 +168,7 @@ def visualize_CPM(jobs, CPM_results, outputpath=DEAFULT_PATH) -> None:
             states[predecessor_id].add_outgoing(job)
 
     st = States(states, jobs, critical_path)
-    states = st.states
+    states = st.__states
 
     # Create a directed graph
     graph = nx.DiGraph()
