@@ -19,7 +19,6 @@ def main():
     # Convert the "predecessors" column to a list
     df['predecessors'] = df['predecessors'].apply(ast.literal_eval)
     df['id'] = df['id'].apply(str)
-    df.drop('Unnamed: 0', axis=1, inplace=True)
 
     # Convert the DataFrame to a dictionary
     jobs_dict = df.to_dict('index')

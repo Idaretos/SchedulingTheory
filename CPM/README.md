@@ -15,22 +15,22 @@ To use this program, you must first provide a csv file with the job data.
 Here is an example of the data file format:
 
 ```csv
-|    |   id |   duration | predecessors   |
-|---:|-----:|-----------:|:---------------|
-|  0 |    1 |          5 | []             |
-|  1 |    2 |          6 | [1]            |
-|  2 |    3 |          9 | [1]            |
-|  3 |    4 |         12 | [2]            |
-|  4 |    5 |          7 | [3]            |
-|  5 |    6 |         12 | [3]            |
-|  6 |    7 |         10 | [4]            |
-|  7 |    8 |          6 | [5, 6]         |
-|  8 |    9 |         10 | [5, 6]         |
-|  9 |   10 |          9 | [7]            |
-| 10 |   11 |          7 | [8, 9]         |
-| 11 |   12 |          8 | [10, 11]       |
-| 12 |   13 |          7 | [11]           |
-| 13 |   14 |          5 | [12, 13]       |
+|   id |   duration | predecessors   |
+|-----:|-----------:|:---------------|
+|    1 |          5 | []             |
+|    2 |          6 | [1]            |
+|    3 |          9 | [1]            |
+|    4 |         12 | [2]            |
+|    5 |          7 | [3]            |
+|    6 |         12 | [3]            |
+|    7 |         10 | [4]            |
+|    8 |          6 | [5, 6]         |
+|    9 |         10 | [5, 6]         |
+|   10 |          9 | [7]            |
+|   11 |          7 | [8, 9]         |
+|   12 |          8 | [10, 11]       |
+|   13 |          7 | [11]           |
+|   14 |          5 | [12, 13]       |
 ```
 
 To run the program, execute the main.py script. Make sure you have all the required dependencies installed.

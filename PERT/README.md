@@ -18,22 +18,22 @@ To use this program, you must first provide a csv file with the job data.
 Here is an example of the data file format:
 
 ```csv
-|    | id | optimistic | most_likely | pessimistic | predecessors |
-|---:|---:|-----------:|------------:|------------:|:-------------|
-|  0 |  1 |          2 |           5 |           6 | []           |
-|  1 |  2 |          2 |           6 |           9 | [1]          |
-|  2 |  3 |          4 |           9 |          10 | [1]          |
-|  3 |  4 |          5 |          12 |          18 | [2]          |
-|  4 |  5 |          1 |           7 |           8 | [3]          |
-|  5 |  6 |          5 |          12 |          16 | [3]          |
-|  6 |  7 |          9 |          10 |          11 | [4]          |
-|  7 |  8 |          5 |           6 |          10 | [5, 6]       |
-|  8 |  9 |          3 |          10 |          15 | [5, 6]       |
-|  9 | 10 |          9 |           9 |          20 | [7]          |
-| 10 | 11 |          5 |           7 |           9 | [8, 9]       |
-| 11 | 12 |          3 |           8 |          10 | [10, 11]     |
-| 12 | 13 |          6 |           7 |          14 | [11]         |
-| 13 | 14 |          4 |           5 |           7 | [12, 13]     |
+| id | optimistic | most_likely | pessimistic | predecessors |
+|---:|-----------:|------------:|------------:|:-------------|
+|  1 |          2 |           5 |           6 | []           |
+|  2 |          2 |           6 |           9 | [1]          |
+|  3 |          4 |           9 |          10 | [1]          |
+|  4 |          5 |          12 |          18 | [2]          |
+|  5 |          1 |           7 |           8 | [3]          |
+|  6 |          5 |          12 |          16 | [3]          |
+|  7 |          9 |          10 |          11 | [4]          |
+|  8 |          5 |           6 |          10 | [5, 6]       |
+|  9 |          3 |          10 |          15 | [5, 6]       |
+| 10 |          9 |           9 |          20 | [7]          |
+| 11 |          5 |           7 |           9 | [8, 9]       |
+| 12 |          3 |           8 |          10 | [10, 11]     |
+| 13 |          6 |           7 |          14 | [11]         |
+| 14 |          4 |           5 |           7 | [12, 13]     |
 ```
 
 Each job is represented by a dictionary where the key is the job id and the value is another dictionary with the job's properties. The job's properties include its duration, an array of its predecessors (other jobs that need to be completed before this job can start), and the variance in the duration of the job.
