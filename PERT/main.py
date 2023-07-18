@@ -62,9 +62,11 @@ def main():
     jobs, CPM_results = tmp[max_key]
 
     earliest_start_time, earliest_finish_time, latest_start_time, latest_finish_time, slacks, critical_path, makespan = CPM_results
+    makespan = round(np.average(tmp_makespans[max_key]), 1)
     print("Mode Critical Path:", critical_path)
-    print("Mode Makespan: ", round(np.average(tmp_makespans[max_key]), 1))
+    print("Mode Makespan: ", makespan)
     print(f"Mode Path Proportion:  {critical_paths[max_key]/100}%")
+    CPM_results = (earliest_start_time, earliest_finish_time, latest_start_time, latest_finish_time, slacks, critical_path, makespan)
 
     visualize_CPM(jobs, CPM_results)
 
