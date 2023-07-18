@@ -4,7 +4,7 @@ import ast
 from os.path import realpath, dirname
 from CPM import *
 from job_PERT import PJob
-from visualize import visualize_CPM, DEAFULT_PATH
+from visualize import visualize_PERT, DEAFULT_PATH
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
@@ -57,18 +57,19 @@ def main():
     plt.xlabel('Makespan')
     plt.savefig(DEAFULT_PATH+'/box_plot.png')
 
-
+    
     max_key = max(critical_paths, key=critical_paths.get)
     jobs, CPM_results = tmp[max_key]
 
     earliest_start_time, earliest_finish_time, latest_start_time, latest_finish_time, slacks, critical_path, makespan = CPM_results
     makespan = round(np.average(tmp_makespans[max_key]), 1)
+    mode_path_proportion = np.round(critical_paths[max_key]/100, 2)
     print("Mode Critical Path:", critical_path)
     print("Mode Makespan: ", makespan)
-    print(f"Mode Path Proportion:  {critical_paths[max_key]/100}%")
-    CPM_results = (earliest_start_time, earliest_finish_time, latest_start_time, latest_finish_time, slacks, critical_path, makespan)
+    print(f"Mode Path Proportion:  {mode_path_proportion}%")
+    CPM_results = (mode_path_proportion, 0, 0, 0, 0, critical_path, makespan)
 
-    visualize_CPM(jobs, CPM_results)
+    visualize_PERT(jobs, CPM_results)
 
 
 def cal(jobs_dict):

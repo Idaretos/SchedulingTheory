@@ -74,7 +74,8 @@ class States(object):
     def __init__(self, states, jobs, critical_path) -> None:
         self.__states = states
         shared_outgoing = self.__find_shared_outgoing()
-        
+
+        # Find states that have exact same outgoing and incoming jobs, and connect them with dummies
         for states in shared_outgoing:
             shared_predecessor = self.__find_shared_predecessor(states, jobs)
             if len(shared_predecessor) > 0:
@@ -89,9 +90,11 @@ class States(object):
                             dummy = Job(f'{state.id}', 0, [], is_dummy=True, prev_state=st)
                             st.outgoing = [dummy]
                             state.add_incoming(dummy)
-                            pass
 
+        # Exclude the states that has gotten dummy outgoing job
         shared_outgoing = self.__find_shared_outgoing()
+
+        # Find states that have exact same outgoing jobs, and merge them
         for states in shared_outgoing:
             state = states[0]
             for st in states:
@@ -104,6 +107,8 @@ class States(object):
                 for k, v in self.__states.items():
                     if self.__states[k].outgoing_equals(states[i]):
                         self.__states[k] = state
+                        
+        # Find states that share outgoing jobs and connect them with dummies
         for state in self.__states.values():
             for dummy_state in self.__states.values():
                 if state.subset(dummy_state):
@@ -117,9 +122,10 @@ class States(object):
                     state.add_outgoing(dummy)
                     dummy_state.add_incoming(dummy)
 
-    def states_dict(self):
+    def get_states(self):
         return self.__states
     
+    # Find states that have exact same predecessors
     @staticmethod
     def __find_shared_predecessor(states, jobs) -> dict:
         incoming_dict = defaultdict(list)
@@ -130,6 +136,7 @@ class States(object):
         shared_predecessor = [states for predecessor, states in incoming_dict.items() if len(states) > 1]
         return shared_predecessor
 
+    # Find states that have exact same outgoing jobs
     def __find_shared_outgoing(self) -> dict:
         # Create a dictionary where the keys are the outgoing jobs, and the values are lists of states
         outgoing_dict = defaultdict(list)
@@ -144,9 +151,9 @@ class States(object):
 
 
 DEAFULT_PATH = os.path.dirname(os.path.realpath(__file__))+'/output'
-def visualize_CPM(jobs, CPM_results, outputpath=DEAFULT_PATH) -> None:
+def visualize_PERT(jobs, CPM_results, outputpath=DEAFULT_PATH) -> None:
     network = Network(jobs)
-    earliest_start_time, earliest_finish_time, latest_start_time, latest_finish_time, slacks, critical_path, makespan = CPM_results
+    mode_path_proportion, a, a, a, a, critical_path, makespan = CPM_results
 
 
     # Create a dictionary to store all states
@@ -168,7 +175,7 @@ def visualize_CPM(jobs, CPM_results, outputpath=DEAFULT_PATH) -> None:
             states[predecessor_id].add_outgoing(job)
 
     st = States(states, jobs, critical_path)
-    states = st.states_dict()
+    states = st.get_states()
 
     # Create a directed graph
     graph = nx.DiGraph()
@@ -219,16 +226,17 @@ def visualize_CPM(jobs, CPM_results, outputpath=DEAFULT_PATH) -> None:
     node_labels = nx.get_node_attributes(graph, 'label')
     nx.draw_networkx_labels(graph, pos, labels=node_labels, font_size=6, font_color='white')
 
-    plt.title('Critical Path Method')
+    plt.title('PERT')
     if not os.path.exists(outputpath):
         os.makedirs(outputpath)
-    makespan_line = mlines.Line2D([], [], color='none', label=f'Mode Makespan = {makespan}')
+    makespan_line = mlines.Line2D([], [], color='none', label=f'Mode Makespan: {makespan}')
+    mode_path_proportion_line = mlines.Line2D([], [], color='none', label=f'Proportion = {mode_path_proportion}%')
     c_line = mlines.Line2D([], [], color='red', marker='_', markersize=15, label='Mode Critical Paths')
     j_line = mlines.Line2D([], [], color='black', marker='_', markersize=15, label='Jn: Job n')
     d_line = mlines.Line2D([], [], color='lightgray', marker='_', markersize=15, label='D: Dummy Job')
 
     # Add the legend to the plot
-    plt.legend(handles=[makespan_line, c_line, j_line, d_line], loc='lower left', frameon=False)
+    plt.legend(handles=[makespan_line, mode_path_proportion_line, c_line, j_line, d_line], loc='lower left', frameon=False)
 
     plt.savefig(outputpath+'/PERT.png')
     plt.show()

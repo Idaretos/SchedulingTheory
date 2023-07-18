@@ -21,6 +21,9 @@ class State(object):
         self.outgoing.append(job)
 
     def done_time(self, earliest_finish_time, latest_finish_time):
+        '''
+        calculate the earliest and latest time that the state can be done
+        '''
         eft = -1
         lft = -1
         for incoming in self.incoming:
@@ -73,25 +76,27 @@ class State(object):
 class StatesMerger(object):
     def __init__(self, states, jobs, critical_path) -> None:
         self.__states = states
+
+        # Find states that have exact same outgoing and incoming jobs, and connect them with dummies
         shared_outgoing = self.__find_shared_outgoing()
-        
         for states in shared_outgoing:
             shared_predecessor = self.__find_shared_predecessor(states, jobs)
-            if len(shared_predecessor) > 0:
-                for shared_states in shared_predecessor:
-                    state = shared_states[0]
-                    for st in shared_states:
-                        if st.is_critical:
-                            state = st
-                            break
-                    for st in shared_states:
-                        if st != state:
-                            dummy = Job(f'{state.id}', 0, [], is_dummy=True, prev_state=st)
-                            st.outgoing = [dummy]
-                            state.add_incoming(dummy)
-                            pass
+            for shared_states in shared_predecessor:
+                state = shared_states[0]
+                for st in shared_states:
+                    if st.is_critical:
+                        state = st
+                        break
+                for st in shared_states:
+                    if st != state:
+                        dummy = Job(f'{state.id}', 0, [], is_dummy=True, prev_state=st)
+                        st.outgoing = [dummy]
+                        state.add_incoming(dummy)
 
+        # Exclude the states that has gotten dummy outgoing job
         shared_outgoing = self.__find_shared_outgoing()
+
+        # Find states that have exact same outgoing jobs, and merge them
         for states in shared_outgoing:
             state = states[0]
             for st in states:
@@ -104,6 +109,8 @@ class StatesMerger(object):
                 for k, v in self.__states.items():
                     if self.__states[k].outgoing_equals(states[i]):
                         self.__states[k] = state
+        
+        # Find states that share outgoing jobs and connect them with dummies
         for state in self.__states.values():
             for dummy_state in self.__states.values():
                 if state.subset(dummy_state):
@@ -117,9 +124,10 @@ class StatesMerger(object):
                     state.add_outgoing(dummy)
                     dummy_state.add_incoming(dummy)
 
-    def states_dict(self):
+    def get_states(self):
         return self.__states
     
+    # Find states that have exact same predecessors
     @staticmethod
     def __find_shared_predecessor(states, jobs) -> dict:
         incoming_dict = defaultdict(list)
@@ -130,6 +138,7 @@ class StatesMerger(object):
         shared_predecessor = [states for predecessor, states in incoming_dict.items() if len(states) > 1]
         return shared_predecessor
 
+    # Find states that have exact same outgoing jobs
     def __find_shared_outgoing(self) -> dict:
         # Create a dictionary where the keys are the outgoing jobs, and the values are lists of states
         outgoing_dict = defaultdict(list)
@@ -168,7 +177,7 @@ def visualize_CPM(jobs, CPM_results, outputpath=DEAFULT_PATH) -> None:
             states[predecessor_id].add_outgoing(job)
 
     st = StatesMerger(states, jobs, critical_path)
-    states = st.states_dict()
+    states = st.get_states()
 
     # Create a directed graph
     graph = nx.DiGraph()
