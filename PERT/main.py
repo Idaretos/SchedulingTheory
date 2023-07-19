@@ -49,13 +49,13 @@ def main():
     sns.kdeplot(makespans, fill=True)
     plt.title('Density Plot of Makespans')
     plt.xlabel('Makespan')
-    plt.savefig(DEAFULT_PATH+'/density_plot.png')
+    plt.savefig(outputpath+'/density_plot.png')
 
     plt.figure()
     sns.boxplot(makespans, color='lightblue')
     plt.title('Box Plot of Makespans')
     plt.xlabel('Makespan')
-    plt.savefig(DEAFULT_PATH+'/box_plot.png')
+    plt.savefig(outputpath+'/box_plot.png')
 
     
     max_key = max(critical_paths, key=critical_paths.get)
@@ -69,7 +69,7 @@ def main():
     print(f"Mode Path Proportion:  {mode_path_proportion}%")
     CPM_results = (mode_path_proportion, 0, 0, 0, 0, critical_path, makespan)
 
-    visualize_PERT(jobs, CPM_results)
+    visualize_PERT(jobs, CPM_results, outputpath=outputpath)
 
 
 def cal(jobs_dict):

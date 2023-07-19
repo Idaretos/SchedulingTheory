@@ -70,9 +70,11 @@ class State(object):
         return int(self.id)
 
     
-class States(object):
-    def __init__(self, states, jobs, critical_path) -> None:
+class StateAssembler(object):
+    def __init__(self, states) -> None:
         self.__states = states
+
+    def run(self, jobs, critical_path) -> None:
         shared_outgoing = self.__find_shared_outgoing()
 
         # Find states that have exact same outgoing and incoming jobs, and connect them with dummies
@@ -122,7 +124,8 @@ class States(object):
                     state.add_outgoing(dummy)
                     dummy_state.add_incoming(dummy)
 
-    def get_states(self):
+    def __call__(self, jobs, critical_path):
+        self.run(jobs, critical_path)
         return self.__states
     
     # Find states that have exact same predecessors
@@ -174,8 +177,8 @@ def visualize_PERT(jobs, CPM_results, outputpath=DEAFULT_PATH) -> None:
         for predecessor_id in job.predecessors:
             states[predecessor_id].add_outgoing(job)
 
-    st = States(states, jobs, critical_path)
-    states = st.get_states()
+    state_assembler = StateAssembler(states)
+    states = state_assembler(jobs, critical_path)
 
     # Create a directed graph
     graph = nx.DiGraph()

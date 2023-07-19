@@ -5,6 +5,7 @@ import os
 from networkx.drawing.nx_agraph import graphviz_layout
 from collections import defaultdict
 from CPM import *
+DEAFULT_PATH = os.path.dirname(os.path.realpath(__file__))+'/output'
 
 # Define a class State to represent each state with its incoming and outgoing jobs
 class State(object):
@@ -73,10 +74,11 @@ class State(object):
         return int(self.id)
 
     
-class StatesMerger(object):
-    def __init__(self, states, jobs, critical_path) -> None:
+class StateAssembler(object):
+    def __init__(self, states) -> None:
         self.__states = states
 
+    def run(self, jobs, critical_path):
         # Find states that have exact same outgoing and incoming jobs, and connect them with dummies
         shared_outgoing = self.__find_shared_outgoing()
         for states in shared_outgoing:
@@ -124,7 +126,8 @@ class StatesMerger(object):
                     state.add_outgoing(dummy)
                     dummy_state.add_incoming(dummy)
 
-    def get_states(self):
+    def __call__(self, jobs, critical_path):
+        self.run(jobs, critical_path)
         return self.__states
     
     # Find states that have exact same predecessors
@@ -152,7 +155,6 @@ class StatesMerger(object):
         return shared_outgoing
 
 
-DEAFULT_PATH = os.path.dirname(os.path.realpath(__file__))+'/output'
 def visualize_CPM(jobs, CPM_results, outputpath=DEAFULT_PATH) -> None:
     network = Network(jobs)
     earliest_start_time, earliest_finish_time, latest_start_time, latest_finish_time, slacks, critical_path, makespan = CPM_results
@@ -176,8 +178,8 @@ def visualize_CPM(jobs, CPM_results, outputpath=DEAFULT_PATH) -> None:
         for predecessor_id in job.predecessors:
             states[predecessor_id].add_outgoing(job)
 
-    st = StatesMerger(states, jobs, critical_path)
-    states = st.get_states()
+    state_assembler = StateAssembler(states)
+    states = state_assembler(jobs, critical_path)
 
     # Create a directed graph
     graph = nx.DiGraph()
