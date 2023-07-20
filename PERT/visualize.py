@@ -18,23 +18,7 @@ class State(object):
         self.incoming.append(job)
 
     def add_outgoing(self, job) -> None:
-        self.outgoing.append(job)
-
-    def done_time(self, earliest_finish_time, latest_finish_time):
-        eft = -1
-        lft = -1
-        for incoming in self.incoming:
-            if not incoming.is_dummy:
-                temp_eft = earliest_finish_time[incoming.id]
-                temp_lft = latest_finish_time[incoming.id]
-            else:
-                temp_eft, temp_lft = incoming.prev_state.done_time(earliest_finish_time, latest_finish_time)
-            if eft < temp_eft:
-                eft = temp_eft
-            if lft < temp_lft:
-                lft = temp_lft
-        return eft, lft
-                
+        self.outgoing.append(job)                
 
     def subset(self, state) -> bool:
         tmpset =  set(self.outgoing) - set(state.outgoing)

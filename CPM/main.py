@@ -1,9 +1,9 @@
-import sys
 import pandas as pd
+import sys
 import ast
 from os.path import realpath, dirname
-from CPM import *
 from visualize import visualize_CPM, DEAFULT_PATH
+from CPM import *
 
 def main():
     if len(sys.argv) > 1:
