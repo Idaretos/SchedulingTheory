@@ -52,14 +52,12 @@ def main():
         std_dev += ((X[i][2]-X[i][0])/6)*((X[i][2]-X[i][0])/6)
     std_dev = np.sqrt(std_dev)
 
-    print(mean, std_dev)
-
     makespans = []
     critical_paths = defaultdict(int)
     tmp = {}
     tmp_makespans = defaultdict(list)
 
-    ITERATION = 10000
+    ITERATION = 50000
     for i in range(ITERATION):
         jobs, CPM_results = cal(jobs_dict)
         earliest_start_time, earliest_finish_time, latest_start_time, latest_finish_time, slacks, critical_path, makespan = CPM_results
@@ -69,8 +67,6 @@ def main():
         tmp_makespans[str(critical_path)].append(makespan)
 
     plt.figure()
-    mean_makespan = np.mean(makespans)
-    std_dev_makespan = np.std(makespans)
     min_makespan = np.min(makespans)
     max_makespan = np.max(makespans)
     sns.kdeplot(makespans, fill=True)
@@ -80,13 +76,6 @@ def main():
     plt.title('Density Plot of Makespans')
     plt.xlabel('Makespan')
     plt.savefig(outputpath+'/density_plot.png')
-
-    # plt.figure()
-    # sns.boxplot(makespans, color='lightblue')
-    # plt.title('Box Plot of Makespans')
-    # plt.xlabel('Makespan')
-    # plt.savefig(outputpath+'/box_plot.png')
-
     
     max_key = max(critical_paths, key=critical_paths.get)
     jobs, CPM_results = tmp[max_key]

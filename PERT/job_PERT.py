@@ -25,6 +25,8 @@ class PJob(Job):
     
     @staticmethod
     def pert_duration(optimistic, most_likely, pessimistic) -> float:
+        if pessimistic == optimistic:
+            return most_likely
         alpha = 1 + 4 * (most_likely-optimistic) / (pessimistic-optimistic)
         beta = 1 + 4 * (pessimistic-most_likely) / (pessimistic - optimistic)
         z = betaincinv(alpha, beta, np.random.uniform(0, 1))
@@ -34,14 +36,3 @@ class PJob(Job):
 class OJob(Job):
     def __init__(self, id, optimistic, most_likely, pessimistic, predecessors, is_dummy=False, prev_state=None) -> None:
         super().__init__(id, most_likely, predecessors, is_dummy, prev_state)
-
-if __name__ == '__main__':
-    optimistic = 2
-    most_likely = 5
-    pessimistic = 7
-    durations = []
-    for i in range(1000000):
-        durations.append(PJob.beta_duration(optimistic, most_likely, pessimistic))
-    plt.plot()
-    plt.hist(durations)
-    plt.show()
