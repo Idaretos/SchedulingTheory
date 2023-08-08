@@ -1,13 +1,12 @@
 import pandas as pd
+from reader import *
 from Optimizer import Optimizer
 from Jobs import *
 import os
 PATH = os.path.dirname(os.path.realpath(__file__))
 
 def main(filepath, visualize=False) -> None:
-    c0 = 6
-    workflow = pd.read_csv(filepath+'/workflow.csv')
-    costs = pd.read_csv(filepath+'/costs.csv')
+    workflow, costs, c0 = read_files(filepath)
     jobs = create_jobs(workflow, costs)
     oz = Optimizer(jobs, c0)
     critical_path, makespan = oz.optimize(visualize=visualize)
@@ -21,4 +20,4 @@ def main(filepath, visualize=False) -> None:
     print(f'makespan: {makespan}\n')
 
 if __name__== '__main__':
-    main(PATH+'/input/pinedo_4_4', visualize=False)
+    main(PATH+'/input/example', visualize=False)

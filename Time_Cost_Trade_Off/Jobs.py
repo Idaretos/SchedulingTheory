@@ -37,12 +37,12 @@ class Job(object):
 
     
 def create_jobs(workflow, costs) -> Dict[str, Job]:
-    workflow['predecessors'] = workflow['predecessors'].apply(ast.literal_eval)
+    workflow['predecessors'] = workflow['predecessors']
     ids = workflow['id'].tolist()
     predecessors = workflow['predecessors'].tolist()
     p_maxs = costs['p_max'].tolist()
     p_mins = costs['p_min'].tolist()
-    curr_costs = costs['curr_cost'].tolist()
+    min_costs = costs['curr_cost'].tolist()
     marginal_costs = costs['marginal_cost'].tolist()
     jobs = {}
     for i in range(len(ids)):
