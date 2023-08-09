@@ -11,6 +11,7 @@ class PathFinder(object):
         self.graph = AdjacencyTable()
         self.paths = self.all_paths()
         self.critical_paths = []
+        self.save_dict = {}
         for job1 in self.network.jobs:
             for job2 in job1.predecessors:
                 self.graph.add_edge(job2, job1.id)
@@ -105,9 +106,11 @@ class PathFinder(object):
         for source in self.network.sources:
             dfs(source, [source])
 
-        return paths        
-
+        return paths
+     
+    
     def minimal_cut_sets(self, critical_path) -> List[List[Job]]:
+        self.save_dict = {}
         sets = []
         subsets = self.__all_subsets(critical_path)
         default_constraint = set([job.id for job in self.network.jobs])-set([job.id for job in critical_path])
@@ -129,12 +132,18 @@ class PathFinder(object):
     def __is_cut_set(self, subset: List[Job], default_constraint: List[Job]) -> bool:
         if len(subset) == 0:
             return False
+        key = (tuple(subset), tuple(default_constraint))
+        if key in self.save_dict:
+            return self.save_dict[key]
+        
         subset = [job.id for job in subset]
         constraint = set(subset) | default_constraint
         for source in self.network.sources:
             for sink in self.network.sinks:
                 if self.graph.is_reachable(source.id, sink.id, constraint):
+                    self.save_dict[key] = False
                     return False
+        self.save_dict[key] = True
         return True
 
     @staticmethod
@@ -206,7 +215,7 @@ class Optimizer(PathFinder):
 
                 if visualize:
                     print(min_cost_cut_set)
-                    visualize_CPM(self.jobs_dict, (critical_path, makespan), self.paths, title=f'step {step}.')
+                    visualize_CPM(self.jobs_dict, (critical_path, makespan), self.paths, emphasize=[job.id for job in min_cost_cut_set], title=f'step {step}.')
             else:
                 break
         if visualize:

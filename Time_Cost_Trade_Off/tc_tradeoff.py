@@ -20,4 +20,4 @@ def main(filepath, visualize=False) -> None:
     print(f'makespan: {makespan}\n')
 
 if __name__== '__main__':
-    main(PATH+'/input/lecture', visualize=True)
+    main(PATH+'/input/example', visualize=False)

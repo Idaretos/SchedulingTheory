@@ -156,7 +156,7 @@ class StateAssembler(object):
         return shared_outgoing
 
 
-def visualize_CPM(jobs, CPM_results, paths: List[List[Job]], title='Critical Path Method', outputpath=DEAFULT_PATH) -> None:
+def visualize_CPM(jobs, CPM_results, paths: List[List[Job]], title='Critical Path Method', emphasize=(), outputpath=DEAFULT_PATH) -> None:
     network = Network(jobs)
     critical_path, makespan = CPM_results
     critical_paths = []
@@ -197,7 +197,7 @@ def visualize_CPM(jobs, CPM_results, paths: List[List[Job]], title='Critical Pat
     for state in states.values():
         for outgoing in state.outgoing:
             if not outgoing.is_dummy:
-                graph.add_edge(state, states[outgoing.id], label=f"J{str(outgoing)}: {outgoing.duration}", is_critical=(outgoing in critical_path), is_dummy=False)
+                graph.add_edge(state, states[outgoing.id], label=f"J{str(outgoing)}: {outgoing.duration}", is_critical=(outgoing in critical_path), is_dummy=False, emp=(outgoing.id in emphasize))
             else:
                 truth = [False, False]
                 out_state = states[outgoing.id]
@@ -211,7 +211,7 @@ def visualize_CPM(jobs, CPM_results, paths: List[List[Job]], title='Critical Pat
                             truth[1] = True
                     if truth[0] and truth[1]:
                         break
-                graph.add_edge(state, out_state, label='D: 0', is_critical=(truth[0] and truth[1]), is_dummy=True)
+                graph.add_edge(state, out_state, label='D: 0', is_critical=(truth[0] and truth[1]), is_dummy=True, emp=False)
 
     # Draw the graph
     plt.figure(figsize=(12, 6))
@@ -221,8 +221,12 @@ def visualize_CPM(jobs, CPM_results, paths: List[List[Job]], title='Critical Pat
     edge_labels = nx.get_edge_attributes(graph, 'label')
     nx.draw_networkx_edge_labels(graph, pos, edge_labels=edge_labels, font_size=8)
 
+    # Draw emphasized edges
+    emphasize_edges = [(u, v) for u, v, d in graph.edges(data=True) if d['emp']]
+    nx.draw_networkx_edges(graph, pos, edgelist=emphasize_edges, edge_color='blue', arrows=True)
+
     # Draw non-critical, non-dummy edges
-    non_critical_non_dummy_edges = [(u, v) for u, v, d in graph.edges(data=True) if not d['is_critical'] and not d['is_dummy']]
+    non_critical_non_dummy_edges = [(u, v) for u, v, d in graph.edges(data=True) if not d['is_critical'] and not d['is_dummy'] and not d['emp']]
     nx.draw_networkx_edges(graph, pos, edgelist=non_critical_non_dummy_edges, edge_color='black', arrows=True)
 
     # Draw non-critical dummy edges
@@ -230,8 +234,13 @@ def visualize_CPM(jobs, CPM_results, paths: List[List[Job]], title='Critical Pat
     nx.draw_networkx_edges(graph, pos, edgelist=non_critical_dummy_edges, edge_color='lightgray', arrows=True)
 
     # Draw critical edges
-    critical_edges = [(u, v) for u, v, d in graph.edges(data=True) if d['is_critical']]
+    critical_edges = [(u, v) for u, v, d in graph.edges(data=True) if d['is_critical'] and not d['emp']]
     nx.draw_networkx_edges(graph, pos, edgelist=critical_edges, edge_color='red', arrows=True)
+
+    # Draw critical, emphasized edges
+    emp_critical_edges = [(u, v) for u, v, d in graph.edges(data=True) if d['is_critical'] and d['emp']]
+    nx.draw_networkx_edges(graph, pos, edgelist=emp_critical_edges, edge_color='darkblue',width=3, arrows=True)
+
 
     # Draw non-critical nodes
     non_critical_nodes = [node for node in graph.nodes() if not node.is_critical]

@@ -18,6 +18,21 @@ class Job(object):
     def __repr__(self) -> str:
         return self.id
     
+    def __eq__(self, __value: object) -> bool:
+        if isinstance(__value, Job):
+            return (self.id == __value.id
+                    and self.duration == __value.duration
+                    and self.predecessors == __value.predecessors
+                    and self.p_max == __value.p_max
+                    and self.p_min == __value.p_min
+                    and self.cost == __value.cost
+                    and self.marginal_cost == __value.marginal_cost
+                    and self.is_dummy == __value.is_dummy)
+        return False
+    
+    def __hash__(self):
+        return hash(self.id)
+    
     def __lt__(self, other):
         if isinstance(other, Job):
             return self.id < other.id
@@ -42,7 +57,7 @@ def create_jobs(workflow, costs) -> Dict[str, Job]:
     predecessors = workflow['predecessors'].tolist()
     p_maxs = costs['p_max'].tolist()
     p_mins = costs['p_min'].tolist()
-    min_costs = costs['curr_cost'].tolist()
+    min_costs = costs['min_cost'].tolist()
     marginal_costs = costs['marginal_cost'].tolist()
     jobs = {}
     for i in range(len(ids)):
