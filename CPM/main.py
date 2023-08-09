@@ -2,7 +2,7 @@ import pandas as pd
 import sys
 import ast
 from os.path import realpath, dirname
-from visualize import visualize_CPM, DEAFULT_PATH
+from visualize import *
 from CPM import *
 
 def main():
@@ -42,10 +42,11 @@ def main():
     print("Latest Start Time:", latest_start_time)
     print("Latest Finish Time:", latest_finish_time)
     print("Slacks:", slacks)
-    print("Critical Path:", critical_path)
+    # print("Critical Path:", critical_path)
+    print_critical_paths(network, title='Critical Paths')
     print("Makespan: ", makespan)
 
-    visualize_CPM(jobs, CPM_results, outputpath)
+    visualize_CPM(jobs, CPM_results, network, outputpath)
 
 if __name__ == '__main__':
     main()

@@ -137,11 +137,35 @@ class StateAssembler(object):
         return shared_outgoing
 
 
+def all_paths(network) -> list:
+        def dfs(current, path):
+            # If the current job is a sink, add the path to the result
+            if current in network.sinks:
+                paths.append(path)
+                return
+            
+            # Explore the successors of the current job
+            for successor in network.successors[current.id]:
+                dfs(successor, path + [successor])
+
+        paths = []
+        # Start DFS from each source in the network
+        for source in network.sources:
+            dfs(source, [source])
+
+        return paths
+
 DEAFULT_PATH = os.path.dirname(os.path.realpath(__file__))+'/output'
-def visualize_PERT(jobs, CPM_results, outputpath=DEAFULT_PATH) -> None:
+def visualize_PERT(jobs, CPM_results, paths, outputpath=DEAFULT_PATH) -> None:
     network = Network(jobs)
     mode_path_proportion, a, a, a, a, critical_path, makespan = CPM_results
-
+    critical_paths = []
+    for path in paths:
+        tmp_span = 0
+        for job in path:
+            tmp_span += job.duration
+        if tmp_span == makespan:
+            critical_paths.append(path)
 
     # Create a dictionary to store all states
     states = {'0': State('0', is_critical=True)}
@@ -175,8 +199,19 @@ def visualize_PERT(jobs, CPM_results, outputpath=DEAFULT_PATH) -> None:
             if not outgoing.is_dummy:
                 graph.add_edge(state, states[outgoing.id], label=f"J{str(outgoing)}", is_critical=(outgoing in critical_path), is_dummy=False)
             else:
-                graph.add_edge(state, states[outgoing.id], label='D', is_critical=(state.is_critical and states[outgoing.id].is_critical), is_dummy=True)
-
+                truth = [False, False]
+                out_state = states[outgoing.id]
+                for path in critical_paths:
+                    truth = [False, False]
+                    for incoming in state.incoming:
+                        if incoming in path:
+                            truth[0] = True
+                    for outgoing in out_state.outgoing:
+                        if outgoing in path:
+                            truth[1] = True
+                    if truth[0] and truth[1]:
+                        break
+                graph.add_edge(state, out_state, label='D: 0', is_critical=(truth[0] and truth[1]), is_dummy=True)
     # Draw the graph
     plt.figure(figsize=(12, 6))
     pos = graphviz_layout(graph, prog='dot')

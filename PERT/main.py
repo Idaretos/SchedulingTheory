@@ -8,7 +8,7 @@ from collections import defaultdict
 from os.path import realpath, dirname
 from CPM import *
 from job_PERT import *
-from visualize import visualize_PERT, DEAFULT_PATH
+from visualize import *
 
 def main():
     if len(sys.argv) > 1:
@@ -36,6 +36,9 @@ def main():
 
     # Create the network and add jobs and dependencies
     network = Network(jobs)
+
+    # Find out all possible paths
+    paths = all_paths(network)
 
     # Run the CPM algorithm
     CPM_results = CPM(network)
@@ -88,7 +91,7 @@ def main():
     print(f"Mode Path Proportion:  {mode_path_proportion}%")
     CPM_results = (mode_path_proportion, 0, 0, 0, 0, critical_path, makespan)
 
-    visualize_PERT(jobs, CPM_results, outputpath=outputpath)
+    visualize_PERT(jobs, CPM_results, paths, outputpath=outputpath)
 
 
 def cal(jobs_dict):

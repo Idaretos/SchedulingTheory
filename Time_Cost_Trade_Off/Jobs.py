@@ -46,7 +46,7 @@ def create_jobs(workflow, costs) -> Dict[str, Job]:
     marginal_costs = costs['marginal_cost'].tolist()
     jobs = {}
     for i in range(len(ids)):
-        jobs[str(ids[i])] = Job(str(ids[i]), predecessors[i], p_maxs[i], p_mins[i], curr_costs[i], marginal_costs[i])
+        jobs[str(ids[i])] = Job(str(ids[i]), predecessors[i], p_maxs[i], p_mins[i], min_costs[i], marginal_costs[i])
     return jobs
 
 

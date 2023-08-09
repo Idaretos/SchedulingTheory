@@ -155,10 +155,10 @@ class StateAssembler(object):
         return shared_outgoing
 
 
-def visualize_CPM(jobs, CPM_results, outputpath=DEAFULT_PATH) -> None:
-    network = Network(jobs)
+def visualize_CPM(jobs: dict, CPM_results: tuple, network: Network, outputpath: str=DEAFULT_PATH) -> None:
     earliest_start_time, earliest_finish_time, latest_start_time, latest_finish_time, slacks, critical_path, makespan = CPM_results
-
+    paths = network.paths
+    critical_paths = network.critical_paths
 
     # Create a dictionary to store all states
     states = {'0': State('0', is_critical=True)}
@@ -199,8 +199,19 @@ def visualize_CPM(jobs, CPM_results, outputpath=DEAFULT_PATH) -> None:
             if not outgoing.is_dummy:
                 graph.add_edge(state, states[outgoing.id], label=f"J{str(outgoing)}: {outgoing.duration}", is_critical=(outgoing in critical_path), is_dummy=False)
             else:
-                graph.add_edge(state, states[outgoing.id], label='D: 0', is_critical=(state.is_critical and states[outgoing.id].is_critical), is_dummy=True)
-
+                truth = [False, False]
+                out_state = states[outgoing.id]
+                for path in critical_paths:
+                    truth = [False, False]
+                    for incoming in state.incoming:
+                        if incoming in path:
+                            truth[0] = True
+                    for outgoing in out_state.outgoing:
+                        if outgoing in path:
+                            truth[1] = True
+                    if truth[0] and truth[1]:
+                        break
+                graph.add_edge(state, out_state, label='D: 0', is_critical=(truth[0] and truth[1]), is_dummy=True)
     # Draw the graph
     plt.figure(figsize=(12, 6))
     pos = graphviz_layout(graph, prog='dot')
@@ -250,3 +261,13 @@ def visualize_CPM(jobs, CPM_results, outputpath=DEAFULT_PATH) -> None:
 
     plt.savefig(outputpath+'/CPM.png')
     plt.show()
+
+
+def print_critical_paths(network: Network, title: str="") -> None:
+    if title != "":
+        print(title, end=':\n')
+    for path in network.critical_paths:
+        print('source ->', end=' ')
+        for job in path:
+            print(job, end=' -> ')
+        print('sink')
