@@ -3,7 +3,7 @@ from os.path import dirname, realpath
 from reader import read_files
 PATH = dirname(realpath(__file__))
 
-def main(workflow, costs, c_0):
+def optimize(workflow, costs, c_0):
     n, predecessors, p_max, p_min, min_costs, c = create_jobs(workflow, costs)
 
     # Create a linear programming problem
@@ -53,7 +53,7 @@ def create_jobs(workflow, costs) -> tuple:
     predecessors = workflow['predecessors'].tolist()
     p_maxs = costs['p_max'].tolist()
     p_mins = costs['p_min'].tolist()
-    min_costs = costs['curr_cost'].tolist()
+    min_costs = costs['min_cost'].tolist()
     marginal_costs = costs['marginal_cost'].tolist()
     n = len(marginal_costs)
     
@@ -67,4 +67,4 @@ def cal_costs(n, min_costs, p_mins, marginal_costs, p):
 
 if __name__ == '__main__':
     workflow, costs, c_0 = read_files(PATH+'/input/example')
-    main(workflow, costs, c_0)
+    optimize(workflow, costs, c_0)

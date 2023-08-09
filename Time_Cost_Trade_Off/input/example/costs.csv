@@ -1,4 +1,4 @@
-job,p_max,p_min,curr_cost,marginal_cost,overhead_cost
+job,p_max,p_min,min_cost,marginal_cost,overhead_cost
 1,8,5,30,7,6
 2,5,3,25,2
 3,6,4,20,2
