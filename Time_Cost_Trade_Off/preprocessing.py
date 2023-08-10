@@ -1,6 +1,7 @@
 import pandas as pd
 from ast import literal_eval
 import os
+import sys
 PATH = os.path.dirname(os.path.realpath(__file__))
 
 def read_files(filepath) -> pd.DataFrame:
@@ -10,3 +11,15 @@ def read_files(filepath) -> pd.DataFrame:
     overhead_cost = costs['overhead_cost'][0]
     costs.drop(columns=['overhead_cost'], inplace=True)
     return workflow, costs, overhead_cost
+
+def arg() -> tuple:
+    inputpath = PATH+'/input/example'
+    rule = 'heuristic'
+    v = False
+    if len(sys.argv) > 1:
+        inputpath = sys.argv[1]
+    if len(sys.argv) > 2:
+        rule = sys.argv[2]
+    if len(sys.argv) > 3:
+        v = bool(sys.argv[3])
+    return inputpath, rule, v
