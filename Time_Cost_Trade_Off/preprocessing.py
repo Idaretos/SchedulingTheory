@@ -1,5 +1,7 @@
 import pandas as pd
 from ast import literal_eval
+import os
+PATH = os.path.dirname(os.path.realpath(__file__))
 
 def read_files(filepath) -> pd.DataFrame:
     workflow = pd.read_csv(filepath+'/workflow.csv')

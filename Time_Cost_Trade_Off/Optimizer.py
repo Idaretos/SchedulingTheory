@@ -1,15 +1,20 @@
-from typing import Any, Tuple, List, Dict
+from typing import Tuple, List, Dict
 from itertools import chain, combinations
 from Jobs import *
 from AdjacencyTable import AdjacencyTable
 from CPM_visualize import visualize_CPM
+import warnings
+import pulp
 
 class PathFinder(object):
-    def __init__(self, jobs) -> None:
-        self.network: Network = Network(jobs)
-        self.jobs_dict = jobs
+    def __init__(self, workflow, costs) -> None:
+        self.workflow = workflow
+        self.costs = costs
+        self.jobs = self.create_jobs(workflow, costs)
+        self.network: Network = Network(self.jobs)
         self.graph = AdjacencyTable()
         self.paths = self.all_paths()
+        self.makespan = -1
         self.critical_paths = []
         self.save_dict = {}
         for job1 in self.network.jobs:
@@ -18,6 +23,20 @@ class PathFinder(object):
 
     def __repr__(self) -> str:
         return 'PathFinder'
+    
+    @staticmethod
+    def create_jobs(workflow, costs) -> Dict[str, Job]:
+        workflow['predecessors'] = workflow['predecessors']
+        ids = workflow['id'].tolist()
+        predecessors = workflow['predecessors'].tolist()
+        p_maxs = costs['p_max'].tolist()
+        p_mins = costs['p_min'].tolist()
+        min_costs = costs['min_cost'].tolist()
+        marginal_costs = costs['marginal_cost'].tolist()
+        jobs = {}
+        for i in range(len(ids)):
+            jobs[str(ids[i])] = Job(str(ids[i]), predecessors[i], p_maxs[i], p_mins[i], min_costs[i], marginal_costs[i])
+        return jobs
     
     @staticmethod
     def __calculate_earliest_times(network) -> Tuple[dict, dict]:
@@ -110,7 +129,7 @@ class PathFinder(object):
      
     
     def minimal_cut_sets(self, critical_path) -> List[List[Job]]:
-        self.save_dict = {}
+        # self.save_dict = {}
         sets = []
         subsets = self.__all_subsets(critical_path)
         default_constraint = set([job.id for job in self.network.jobs])-set([job.id for job in critical_path])
@@ -161,14 +180,29 @@ def all_contain(item, list_of_lists):
 
 
 class Optimizer(PathFinder):
-    def __init__(self, jobs, c0):
-        super().__init__(jobs)
+    def __init__(self, workflow, costs, c0):
+        super().__init__(workflow, costs)
+        self.rule = 'heuristic'
         self.c0 = c0  # Fixed overhead cost per unit time
+        self.linear_output=None
 
     def __rerp__(self) -> str:
         return 'Optimizer'
 
-    def optimize(self, visualize=False):
+    def optimize(self, rule='heuristic',visualize=False) -> None:
+        '''
+        optimize time/cost trade-offs by certain rule
+        '''
+        self.rule = rule
+        if rule == 'heuristic':
+            self.linear_output = None
+            self.heuristic(visualize)
+        elif rule == 'linear':
+            if visualize:
+                warnings.warn('linear optimization does not support visualization')
+            self.linear()
+
+    def heuristic(self, visualize=False) -> None:
         # Step 1.
         # Set all processing times at their maximum.
         for job in self.network.jobs:
@@ -179,7 +213,7 @@ class Optimizer(PathFinder):
         # Determine all critical path(s) with these processing times.
         critical_path, makespan = self.CPM()
         if visualize:
-            visualize_CPM(self.jobs_dict, (critical_path, makespan), self.paths, title=f'step {step}.')
+            visualize_CPM(self.jobs, (critical_path, makespan), self.paths, title=f'step {step}.')
         
         while True:
             # Step 2.
@@ -214,12 +248,11 @@ class Optimizer(PathFinder):
                 step += 1
 
                 if visualize:
-                    print(min_cost_cut_set)
-                    visualize_CPM(self.jobs_dict, (critical_path, makespan), self.paths, emphasize=[job.id for job in min_cost_cut_set], title=f'step {step}.')
+                    visualize_CPM(self.jobs, (critical_path, makespan), self.paths, emphasize=[job.id for job in min_cost_cut_set], title=f'step {step}.')
             else:
                 break
         if visualize:
-            visualize_CPM(self.jobs_dict, (critical_path, makespan), self.paths, title=f'Final.')
+            visualize_CPM(self.jobs, (critical_path, makespan), self.paths, title=f'Final.')
 
         for path in self.paths:
             tmp_span = 0
@@ -228,6 +261,82 @@ class Optimizer(PathFinder):
             if tmp_span == makespan:
                 self.critical_paths.append(path)
 
-        return critical_path, makespan
+        self.makespan = makespan
 
-# The optimize function will now perform the optimization and return the final critical path after all possible reductions.
+    # The optimize function will now perform the optimization and return the final critical path after all possible reductions.
+
+    def linear(self):
+        def create_lp_jobs(workflow, costs) -> tuple:
+            workflow['predecessors'] = workflow['predecessors']
+            predecessors = workflow['predecessors'].tolist()
+            p_maxs = costs['p_max'].tolist()
+            p_mins = costs['p_min'].tolist()
+            min_costs = costs['min_cost'].tolist()
+            marginal_costs = costs['marginal_cost'].tolist()
+            n = len(marginal_costs)
+            
+            return n, predecessors, p_maxs, p_mins, min_costs, marginal_costs
+
+        def cal_costs(n, min_costs, p_mins, marginal_costs, p):
+            costs = []
+            for i in range(n):
+                costs.append(min_costs[i] + marginal_costs[i]*(p[i]-p_mins[i]))
+            return costs
+        
+        n, predecessors, p_max, p_min, min_costs, c = create_lp_jobs(self.workflow, self.costs)
+
+        # Create a linear programming problem
+        lp_problem = pulp.LpProblem("Job_Scheduling", pulp.LpMinimize)
+
+        # Decision variables
+        p = pulp.LpVariable.dicts("p", range(1, n+1), lowBound=0)
+        x = pulp.LpVariable.dicts("x", range(1, n+1), lowBound=0)
+        C_max = pulp.LpVariable("C_max", lowBound=0)
+
+        # Objective function
+        lp_problem += self.c0*C_max - pulp.lpSum([c[j-1]*p[j] for j in range(1, n+1)])
+
+        # Constraints
+        # Precedence constraints
+        for j in range(n):
+            if predecessors[j]:
+                for pred in predecessors[j]:
+                    lp_problem += x[j+1] - p[pred] - x[pred] >= 0
+
+        # p_min and p_max constraints
+        for j in range(n):
+            lp_problem += p[j+1] >= p_min[j]
+            lp_problem += p[j+1] <= p_max[j]
+
+        # C_max constraints
+        for j in range(n):
+            lp_problem += x[j+1] + p[j+1] <= C_max
+
+        # Solve the problem
+        lp_problem.solve()
+
+        # Extract results
+        results_p = [p[j].varValue for j in range(1, n+1)]
+        results_x = [x[j].varValue for j in range(1, n+1)]
+        results_C_max = C_max.varValue
+
+        results_costs = cal_costs(n, min_costs, p_min, c, results_p)
+        self.linear_output = (results_x, results_p, results_costs, results_C_max)
+        
+
+    def show(self):
+        if self.rule == 'heuristic':
+            print()
+            print_jobs(list(self.jobs.values()))
+            print('critical_paths:')
+            for path in self.critical_paths:
+                print(end='  ')
+                print_path(path)
+            print(f'total_cost: {total_cost(list(self.jobs.values()))}')
+            print(f'makespan: {self.makespan}\n')
+        elif self.rule == 'linear':
+            results_x, results_p, results_costs, results_C_max = self.linear_output
+            print("Start times:", results_x)
+            print("Processing times:", results_p)
+            print("Costs:", results_costs)
+            print("Makespan:", results_C_max)

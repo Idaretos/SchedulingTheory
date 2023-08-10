@@ -1,6 +1,5 @@
 from collections import defaultdict
 from typing import Tuple, List, Dict
-import ast
 
 class Job(object):
     def __init__(self, id, predecessors, p_max, p_min, cost, marginal_cost, is_dummy=False, prev_state=None) -> None:
@@ -48,21 +47,6 @@ class Job(object):
 
     def __ge__(self, other):
         return self.__gt__(other) or self.__eq__(other)
-
-
-    
-def create_jobs(workflow, costs) -> Dict[str, Job]:
-    workflow['predecessors'] = workflow['predecessors']
-    ids = workflow['id'].tolist()
-    predecessors = workflow['predecessors'].tolist()
-    p_maxs = costs['p_max'].tolist()
-    p_mins = costs['p_min'].tolist()
-    min_costs = costs['min_cost'].tolist()
-    marginal_costs = costs['marginal_cost'].tolist()
-    jobs = {}
-    for i in range(len(ids)):
-        jobs[str(ids[i])] = Job(str(ids[i]), predecessors[i], p_maxs[i], p_mins[i], min_costs[i], marginal_costs[i])
-    return jobs
 
 
 def print_path(path: List[Job]) -> None:
