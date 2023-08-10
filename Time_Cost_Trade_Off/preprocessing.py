@@ -21,5 +21,5 @@ def arg() -> tuple:
     if len(sys.argv) > 2:
         rule = sys.argv[2]
     if len(sys.argv) > 3:
-        v = bool(sys.argv[3])
+        v = ('true' in sys.argv[3].lower())
     return inputpath, rule, v
