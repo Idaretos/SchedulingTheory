@@ -64,6 +64,7 @@ The script will process the input, execute the optimization, and display the res
 
 ## Output
 The program will analyze the job data and output the following results:
+
 `heuristic`:
 ```txt
 job:    1       2       3       4       5       6       7       8       9       10      11
