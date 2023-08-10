@@ -60,6 +60,26 @@ class Network:
         self.sources = []
         self.sinks = []
         self.sort()
+        self.paths = self.all_paths()
+        self.critical_paths = []
+
+    def all_paths(self) -> list:
+        def dfs(current, path):
+            # If the current job is a sink, add the path to the result
+            if current in self.sinks:
+                paths.append(path)
+                return
+            
+            # Explore the successors of the current job
+            for successor in self.successors[current.id]:
+                dfs(successor, path + [successor])
+
+        paths = []
+        # Start DFS from each source in the network
+        for source in self.sources:
+            dfs(source, [source])
+
+        return paths
 
     def sort(self) -> None:
         self.sources, self.sinks, self.jobs = topological_sort(self.jobs, self.successors)
@@ -172,4 +192,10 @@ def CPM(network) -> tuple:
     slacks = calculate_slacks(network.jobs, earliest_start_time, latest_start_time)
     critical_path = calculate_critical_path(slacks)
     makespan = max(earliest_finish_time.values())
+    for path in network.paths:
+        tmp_span = 0
+        for job in path:
+            tmp_span += job.duration
+        if tmp_span == makespan:
+            network.critical_paths.append(path)
     return earliest_start_time, earliest_finish_time, latest_start_time, latest_finish_time, slacks, critical_path, makespan

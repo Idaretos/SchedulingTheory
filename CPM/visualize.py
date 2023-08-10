@@ -157,7 +157,6 @@ class StateAssembler(object):
 
 def visualize_CPM(jobs: dict, CPM_results: tuple, network: Network, outputpath: str=DEAFULT_PATH) -> None:
     earliest_start_time, earliest_finish_time, latest_start_time, latest_finish_time, slacks, critical_path, makespan = CPM_results
-    paths = network.paths
     critical_paths = network.critical_paths
 
     # Create a dictionary to store all states

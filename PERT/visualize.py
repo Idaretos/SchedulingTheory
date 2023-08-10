@@ -156,16 +156,9 @@ def all_paths(network) -> list:
         return paths
 
 DEAFULT_PATH = os.path.dirname(os.path.realpath(__file__))+'/output'
-def visualize_PERT(jobs, CPM_results, paths, outputpath=DEAFULT_PATH) -> None:
-    network = Network(jobs)
+def visualize_PERT(jobs: dict, CPM_results: tuple, network: Network, outputpath: str=DEAFULT_PATH) -> None:
     mode_path_proportion, a, a, a, a, critical_path, makespan = CPM_results
-    critical_paths = []
-    for path in paths:
-        tmp_span = 0
-        for job in path:
-            tmp_span += job.duration
-        if tmp_span == makespan:
-            critical_paths.append(path)
+    critical_paths = network.critical_paths
 
     # Create a dictionary to store all states
     states = {'0': State('0', is_critical=True)}
@@ -211,7 +204,7 @@ def visualize_PERT(jobs, CPM_results, paths, outputpath=DEAFULT_PATH) -> None:
                             truth[1] = True
                     if truth[0] and truth[1]:
                         break
-                graph.add_edge(state, out_state, label='D: 0', is_critical=(truth[0] and truth[1]), is_dummy=True)
+                graph.add_edge(state, out_state, label='D', is_critical=(truth[0] and truth[1]), is_dummy=True)
     # Draw the graph
     plt.figure(figsize=(12, 6))
     pos = graphviz_layout(graph, prog='dot')
@@ -243,10 +236,6 @@ def visualize_PERT(jobs, CPM_results, paths, outputpath=DEAFULT_PATH) -> None:
     # Draw starting, ending nodes
     polar_nodes = [node for node in graph.nodes() if (len(node.incoming) == 0 or len(node.outgoing) == 0)]
     nx.draw_networkx_nodes(graph, pos, nodelist=polar_nodes, node_color='darkblue', node_size=500)
-
-    # Draw node labels (earliest time and latest time)
-    node_labels = nx.get_node_attributes(graph, 'label')
-    nx.draw_networkx_labels(graph, pos, labels=node_labels, font_size=6, font_color='white')
 
     plt.title('PERT')
     if not os.path.exists(outputpath):
