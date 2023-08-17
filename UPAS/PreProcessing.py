@@ -1,4 +1,4 @@
-import math
+import math, sys
 
 def preprocess(inputpath):
     def find_MPS(N: list) -> dict:
@@ -40,3 +40,11 @@ def preprocess(inputpath):
 
     return num_jobs, num_machines, mps, p, weight
 
+def arg():
+    inputpath = 'input/example.txt'
+    first_job = 0
+    if len(sys.argv) > 1:
+        inputpath = sys.argv[1]
+    if len(sys.argv) > 2:
+        first_job = int(sys.argv[2])
+    return inputpath, first_job

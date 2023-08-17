@@ -31,3 +31,4 @@ class PostProcessor(object):
         df = pd.read_csv(self.filepath)
         makespan = max(df['Time'].tolist())
         return makespan
+    

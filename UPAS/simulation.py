@@ -2,7 +2,8 @@ import simpy, os
 import pandas as pd
 from collections import defaultdict
 
-save_path = os.path.dirname(os.path.realpath(__file__))+'/output'
+curr_directory = os.path.dirname(os.path.realpath(__file__))
+save_path = curr_directory+'/output'
 if not os.path.exists(save_path):
     os.makedirs(save_path)
 
