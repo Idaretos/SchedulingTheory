@@ -1,4 +1,4 @@
-import math, itertools
+import math
 
 def preprocess(inputpath):
     def find_MPS(N: list) -> dict:

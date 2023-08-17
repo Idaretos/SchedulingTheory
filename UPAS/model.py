@@ -1,5 +1,4 @@
 from simulation import *
-from collections import defaultdict
 
 filepath = save_path+'/event_log.csv'
 
