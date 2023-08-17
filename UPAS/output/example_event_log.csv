@@ -1,0 +1,46 @@
+,Time,Event,Part,Machine
+0,0,Part Created,Part_0_0,source
+1,0,Part Created,Part_2_0,source
+2,0,Part Created,Part_1_0,source
+3,0,Part Transferred,Part_0_0,source
+4,0,Operation Start,Part_0_0,machine 1
+5,0,Operation Finish,Part_0_0,machine 1
+6,0,Part Transferred,Part_0_0,machine 1
+7,0,Operation Start,Part_0_0,machine 2
+8,0,Part Transferred,Part_2_0,source
+9,0,Operation Finish,Part_0_0,machine 2
+10,0,Operation Start,Part_2_0,machine 1
+11,0,Part Transferred,Part_0_0,machine 2
+12,0,Operation Finish,Part_2_0,machine 1
+13,0,Operation Start,Part_0_0,machine 3
+14,0,Part Transferred,Part_2_0,machine 1
+15,0,Operation Start,Part_2_0,machine 2
+16,0,Part Transferred,Part_1_0,source
+17,0,Operation Finish,Part_2_0,machine 2
+18,0,Operation Start,Part_1_0,machine 1
+19,1,Operation Finish,Part_0_0,machine 3
+20,1,Operation Finish,Part_1_0,machine 1
+21,1,Part Transferred,Part_0_0,machine 3
+22,1,Operation Start,Part_0_0,machine 4
+23,1,Part Transferred,Part_2_0,machine 2
+24,1,Operation Start,Part_2_0,machine 3
+25,1,Part Transferred,Part_1_0,machine 1
+26,1,Operation Start,Part_1_0,machine 2
+27,1,Operation Finish,Part_1_0,machine 2
+28,2,Operation Finish,Part_0_0,machine 4
+29,2,Part Completed,Part_0_0,sink
+30,2,Operation Finish,Part_2_0,machine 3
+31,2,Part Transferred,Part_0_0,machine 4
+32,2,Part Transferred,Part_2_0,machine 3
+33,2,Operation Start,Part_2_0,machine 4
+34,2,Operation Finish,Part_2_0,machine 4
+35,2,Part Completed,Part_2_0,sink
+36,2,Part Transferred,Part_1_0,machine 2
+37,2,Part Transferred,Part_2_0,machine 4
+38,2,Operation Start,Part_1_0,machine 3
+39,2,Operation Finish,Part_1_0,machine 3
+40,2,Part Transferred,Part_1_0,machine 3
+41,2,Operation Start,Part_1_0,machine 4
+42,3,Operation Finish,Part_1_0,machine 4
+43,3,Part Completed,Part_1_0,sink
+44,3,Part Transferred,Part_1_0,machine 4
