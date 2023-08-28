@@ -36,7 +36,6 @@ class Source(object):
         self.env.process(self.run())
 
     def run(self):
-        # self.next = self.model[self.model.keys()[self.next]]
         for i in range(self.until):
             part = Part(i, f'Part_{self.sequence[i%self.num_jobs]}_{self.num_for_each[self.sequence[i%self.num_jobs]]}', [ot[self.sequence[i%self.num_jobs]] for ot in self.operation_time], self.sequence[i%self.num_jobs])
             self.num_for_each[self.sequence[i%self.num_jobs]] += 1
