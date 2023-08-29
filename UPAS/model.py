@@ -1,6 +1,6 @@
 from simulation import *
 
-filepath = save_path+'/event_log.csv'
+filepath = SAVE_PATH+'/event_log.csv'
 
 def model(until, sequence, num_jobs, num_machines, p, w) -> None:
     env = simpy.Environment()

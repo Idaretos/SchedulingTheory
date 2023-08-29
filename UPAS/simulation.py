@@ -1,11 +1,10 @@
 import simpy, os
 import pandas as pd
 from collections import defaultdict
+from constants import *
 
-curr_directory = os.path.dirname(os.path.realpath(__file__))
-save_path = curr_directory+'/output'
-if not os.path.exists(save_path):
-    os.makedirs(save_path)
+if not os.path.exists(SAVE_PATH):
+    os.makedirs(SAVE_PATH)
 
 class Part(object):
     def __init__(self, index: int, name: str, p: list, type: int):

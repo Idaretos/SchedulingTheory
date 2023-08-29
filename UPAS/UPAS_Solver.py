@@ -28,7 +28,6 @@ class UPAS_Solver(object):
                 objectives[self.postprocessor.objective(until)].append(next_job)
                 sequence.pop()
             next_job_key = min(objectives.keys())
-            print(until, objectives)
             if len(objectives[next_job_key]) > 1:
                 print('multiple sequence possible!')
             sequence.append(objectives[next_job_key][0])
@@ -36,6 +35,6 @@ class UPAS_Solver(object):
         self.sequence = sequence
 
     def show(self):
-        print('objective function:', self.postprocessor.objective(self.num_mps_jobs))
+        print('objective:', self.postprocessor.objective(self.num_mps_jobs))
         print('sequence:', [job+1 for job in self.sequence])
         print('makespan:', self.postprocessor.makespan())

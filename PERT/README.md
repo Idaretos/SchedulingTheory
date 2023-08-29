@@ -41,13 +41,12 @@ Each job is represented by a dictionary where the key is the job id and the valu
 To run the program, execute the main.py script with the path to your json file and the directory where the output files will be saved as arguments:
 
 ```bash
-python main.py 'input_filename' 'output_directory'
+python main.py 'input_filename' 'output_directory' 'threshold'
 ```
 
-The program will perform a PERT analysis on the job data and output the results as a network diagram showing the jobs and their dependencies, as well as a density plot <!-- and a box plot --> showing the distribution of makespans (the total time required to complete the project). The network diagram and density plot are saved as PNG files in the specified output directory.
+The program will perform a PERT analysis on the job data and output the results as a network diagram showing the jobs and their dependencies, as well as a density plot showing the distribution of makespans (the total time required to complete the project). The network diagram and density plot are saved as PNG files in the specified output directory.
 
 ![image not found](output/example_density_plot.png)
-<!-- ![image not found](output/example_box_plot.png) -->
 ![image not found](output/example_PERT.png)
 
 ## Dependencies
