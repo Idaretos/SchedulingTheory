@@ -6,6 +6,7 @@ from constants import *
 if not os.path.exists(SAVE_PATH):
     os.makedirs(SAVE_PATH)
 
+
 class Part(object):
     def __init__(self, index: int, name: str, p: list, type: int):
         self.id = index
@@ -13,6 +14,7 @@ class Part(object):
         self.p = p
         self.step = 0
         self.type = type
+
 
 class Source(object):
     def __init__(self, env, name, model, monitor, until, sequence, job_types, starter_machine, operation_time):

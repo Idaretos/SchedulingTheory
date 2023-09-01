@@ -2,7 +2,7 @@ from PreProcessing import *
 from model import *
 from PostProcessing import *
 
-class UPAS_Solver(object):
+class Solver(object):
     def __init__(self, inputpath, first_job=0) -> None:
         num_jobs, num_machines, mps, p, w = preprocess(inputpath)
         self.num_jobs = num_jobs
@@ -15,7 +15,7 @@ class UPAS_Solver(object):
         self.num_mps_jobs = sum(num_job for num_job in self.mps.values())
         self.sequence = None
 
-    def solve(self):
+    def solve(self, show_log=False):
         self.mps[self.first_job] -= 1
         sequence = [self.first_job]
         
@@ -31,10 +31,12 @@ class UPAS_Solver(object):
             if len(objectives[next_job_key]) > 1:
                 print('multiple sequence possible!')
             sequence.append(objectives[next_job_key][0])
+            if show_log:
+                print(f'step {until-1}: {[job+1 for job in sequence]}')
             self.mps[objectives[next_job_key][0]] -= 1
         self.sequence = sequence
 
     def show(self):
-        print('objective:', self.postprocessor.objective(self.num_mps_jobs))
+        print('non-productive:', self.postprocessor.objective(self.num_mps_jobs))
         print('sequence:', [job+1 for job in self.sequence])
         print('makespan:', self.postprocessor.makespan())

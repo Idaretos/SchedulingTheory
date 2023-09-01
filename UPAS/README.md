@@ -13,10 +13,9 @@ This project simulates an Unpaced Assembly System to optimize job shop schedulin
 Using the `main.py` script:
 
 Provide the input data path and optionally the first job as command-line arguments.
-bash
 
 ```bash
-python main.py path_to_input_data.csv 0
+python main.py <path_to_input_data.csv> <first_job>
 ```
 
 This will initialize the `UPAS_Solver class`, execute the solver, and display the results.

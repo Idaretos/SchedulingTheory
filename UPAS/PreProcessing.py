@@ -42,7 +42,7 @@ def preprocess(inputpath):
     return num_jobs, num_machines, mps, p, weight
 
 def arg():
-    inputpath = CURRENT_DIRECTORY+'/input/example.txt'
+    inputpath = CURRENT_DIRECTORY+'/input/lecture.txt'
     first_job = 0
     if len(sys.argv) > 1:
         inputpath = sys.argv[1]
