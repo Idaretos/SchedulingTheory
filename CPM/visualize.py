@@ -258,6 +258,38 @@ def visualize_CPM(jobs: dict, CPM_results: tuple, network: Network, outputpath: 
         # Add the legend to the plot
         plt.legend(handles=[makespan_line, c_line, j_line, d_line], loc='lower left', frameon=False)
     
+    elif mode == 'jon' or mode == 'job_on_node':
+        # Create a directed graph
+        graph = nx.DiGraph()
+        graph.graph['graph'] = {'rankdir': 'LR'}
+
+        # Add nodes
+        for job in jobs.values():
+            is_critical = False
+            if job in critical_path:
+                is_critical = True
+            graph.add_node(job, label=f'{job.id}: {job.duration}', is_critical=is_critical)
+        f'{earliest_finish_time[job.id]}/{latest_finish_time[job.id]}'
+
+        # Add edges
+        for job in jobs.values():
+            job: Job = job
+            for predecessor in job.predecessors:
+                graph.add_edge(predecessor, job, is_critical=False)
+
+        # Draw the graph
+        plt.figure(figsize=(12, 6))
+        pos = graphviz_layout(graph, prog='dot')
+
+        # Draw Edges
+        edges = [(u, v) for u, v, d in graph.edges(data=True)]
+        nx.draw_networkx_edges(graph, pos, edgelist=edges, edge_color='black', arrows=True)
+
+        # Draw Nodes
+        node_labels = nx.get_node_attributes(graph, 'label')
+        nx.draw_networkx_nodes(graph, pos, node_color='lightblue', node_size=500)
+        nx.draw_networkx_labels(graph, pos, labels=node_labels, font_size=6)
+        plt.title('Critical Path Method')
     plt.savefig(outputpath+'/CPM.png')
     plt.show()
 

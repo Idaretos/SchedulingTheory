@@ -8,10 +8,13 @@ from CPM import *
 def main():
     inputpath = dirname(realpath(__file__))+'/input/example.csv'
     outputpath = DEAFULT_PATH
+    mode = 'joa'
     if len(sys.argv) > 1:
         inputpath = sys.argv[1]
     if len(sys.argv) > 2:
         outputpath = sys.argv[2]
+    if len(sys.argv) > 3:
+        mode = sys.argv[3]
 
     df = pd.read_csv(inputpath)
 
@@ -45,7 +48,7 @@ def main():
     print_critical_paths(network, title='Critical Paths')
     print("Makespan: ", makespan)
 
-    visualize_CPM(jobs, CPM_results, network, outputpath)
+    visualize_CPM(jobs, CPM_results, network, outputpath, mode)
 
 if __name__ == '__main__':
     main()
