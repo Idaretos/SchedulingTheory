@@ -155,109 +155,109 @@ class StateAssembler(object):
         return shared_outgoing
 
 
-def visualize_CPM(jobs: dict, CPM_results: tuple, network: Network, outputpath: str=DEAFULT_PATH) -> None:
+def visualize_CPM(jobs: dict, CPM_results: tuple, network: Network, outputpath: str=DEAFULT_PATH, mode='joa') -> None:
     earliest_start_time, earliest_finish_time, latest_start_time, latest_finish_time, slacks, critical_path, makespan = CPM_results
     critical_paths = network.critical_paths
+    if mode == 'joa' or mode == 'job_on_arc':
+        # Create a dictionary to store all states
+        states = {'0': State('0', is_critical=True)}
 
-    # Create a dictionary to store all states
-    states = {'0': State('0', is_critical=True)}
+        # Add jobs with no predecessors starting from "state 0"
+        for job in network.sources:
+            states['0'].add_outgoing(job)
 
-    # Add jobs with no predecessors starting from "state 0"
-    for job in network.sources:
-        states['0'].add_outgoing(job)
+        # Add the rest of the jobs
+        for job in jobs.values():
+            is_critical = False
+            if job in critical_path:
+                is_critical = True
+            states[job.id] = State(job.id, is_critical)
+            states[job.id].add_incoming(job)
+        for job in jobs.values():
+            for predecessor_id in job.predecessors:
+                states[predecessor_id].add_outgoing(job)
 
-    # Add the rest of the jobs
-    for job in jobs.values():
-        is_critical = False
-        if job in critical_path:
-            is_critical = True
-        states[job.id] = State(job.id, is_critical)
-        states[job.id].add_incoming(job)
-    for job in jobs.values():
-        for predecessor_id in job.predecessors:
-            states[predecessor_id].add_outgoing(job)
+        state_assembler = StateAssembler(states)
+        states = state_assembler(jobs, critical_path)
 
-    state_assembler = StateAssembler(states)
-    states = state_assembler(jobs, critical_path)
+        # Create a directed graph
+        graph = nx.DiGraph()
 
-    # Create a directed graph
-    graph = nx.DiGraph()
+        graph.graph['graph'] = {'rankdir': 'LR'}
 
-    graph.graph['graph'] = {'rankdir': 'LR'}
-
-    for state in states.values():
-        if state.id == '0':
-            graph.add_node(state, label='0/0')
-        else:
-            eft, lft = state.done_time(earliest_finish_time, latest_finish_time)
-            graph.add_node(state, label=f'{eft}/{lft}')
-
-    # Add edges based on the states
-    for state in states.values():
-        for outgoing in state.outgoing:
-            if not outgoing.is_dummy:
-                graph.add_edge(state, states[outgoing.id], label=f"J{str(outgoing)}: {outgoing.duration}", is_critical=(outgoing in critical_path), is_dummy=False)
+        for state in states.values():
+            if state.id == '0':
+                graph.add_node(state, label='0/0')
             else:
-                truth = [False, False]
-                out_state = states[outgoing.id]
-                for path in critical_paths:
+                eft, lft = state.done_time(earliest_finish_time, latest_finish_time)
+                graph.add_node(state, label=f'{eft}/{lft}')
+
+        # Add edges based on the states
+        for state in states.values():
+            for outgoing in state.outgoing:
+                if not outgoing.is_dummy:
+                    graph.add_edge(state, states[outgoing.id], label=f"J{str(outgoing)}: {outgoing.duration}", is_critical=(outgoing in critical_path), is_dummy=False)
+                else:
                     truth = [False, False]
-                    for incoming in state.incoming:
-                        if incoming in path:
-                            truth[0] = True
-                    for outgoing in out_state.outgoing:
-                        if outgoing in path:
-                            truth[1] = True
-                    if truth[0] and truth[1]:
-                        break
-                graph.add_edge(state, out_state, label='D: 0', is_critical=(truth[0] and truth[1]), is_dummy=True)
-    # Draw the graph
-    plt.figure(figsize=(12, 6))
-    pos = graphviz_layout(graph, prog='dot')
+                    out_state = states[outgoing.id]
+                    for path in critical_paths:
+                        truth = [False, False]
+                        for incoming in state.incoming:
+                            if incoming in path:
+                                truth[0] = True
+                        for outgoing in out_state.outgoing:
+                            if outgoing in path:
+                                truth[1] = True
+                        if truth[0] and truth[1]:
+                            break
+                    graph.add_edge(state, out_state, label='D: 0', is_critical=(truth[0] and truth[1]), is_dummy=True)
+        # Draw the graph
+        plt.figure(figsize=(12, 6))
+        pos = graphviz_layout(graph, prog='dot')
 
-    # Draw edge labels within the edge names
-    edge_labels = nx.get_edge_attributes(graph, 'label')
-    nx.draw_networkx_edge_labels(graph, pos, edge_labels=edge_labels, font_size=8)
+        # Draw edge labels within the edge names
+        edge_labels = nx.get_edge_attributes(graph, 'label')
+        nx.draw_networkx_edge_labels(graph, pos, edge_labels=edge_labels, font_size=8)
 
-    # Draw non-critical, non-dummy edges
-    non_critical_non_dummy_edges = [(u, v) for u, v, d in graph.edges(data=True) if not d['is_critical'] and not d['is_dummy']]
-    nx.draw_networkx_edges(graph, pos, edgelist=non_critical_non_dummy_edges, edge_color='black', arrows=True)
+        # Draw non-critical, non-dummy edges
+        non_critical_non_dummy_edges = [(u, v) for u, v, d in graph.edges(data=True) if not d['is_critical'] and not d['is_dummy']]
+        nx.draw_networkx_edges(graph, pos, edgelist=non_critical_non_dummy_edges, edge_color='black', arrows=True)
 
-    # Draw non-critical dummy edges
-    non_critical_dummy_edges = [(u, v) for u, v, d in graph.edges(data=True) if not d['is_critical'] and d['is_dummy']]
-    nx.draw_networkx_edges(graph, pos, edgelist=non_critical_dummy_edges, edge_color='lightgray', arrows=True)
+        # Draw non-critical dummy edges
+        non_critical_dummy_edges = [(u, v) for u, v, d in graph.edges(data=True) if not d['is_critical'] and d['is_dummy']]
+        nx.draw_networkx_edges(graph, pos, edgelist=non_critical_dummy_edges, edge_color='lightgray', arrows=True)
 
-    # Draw critical edges
-    critical_edges = [(u, v) for u, v, d in graph.edges(data=True) if d['is_critical']]
-    nx.draw_networkx_edges(graph, pos, edgelist=critical_edges, edge_color='red', arrows=True)
+        # Draw critical edges
+        critical_edges = [(u, v) for u, v, d in graph.edges(data=True) if d['is_critical']]
+        nx.draw_networkx_edges(graph, pos, edgelist=critical_edges, edge_color='red', arrows=True)
 
-    # Draw non-critical nodes
-    non_critical_nodes = [node for node in graph.nodes() if not node.is_critical]
-    nx.draw_networkx_nodes(graph, pos, nodelist=non_critical_nodes, node_color='lightblue', node_size=500)
+        # Draw non-critical nodes
+        non_critical_nodes = [node for node in graph.nodes() if not node.is_critical]
+        nx.draw_networkx_nodes(graph, pos, nodelist=non_critical_nodes, node_color='lightblue', node_size=500)
 
-    # Draw critical nodes
-    critical_path_nodes = [node for node in graph.nodes() if node.is_critical and not (len(node.incoming) == 0 or len(node.outgoing) == 0)]
-    nx.draw_networkx_nodes(graph, pos, nodelist=critical_path_nodes, node_color='red', node_size=500)
+        # Draw critical nodes
+        critical_path_nodes = [node for node in graph.nodes() if node.is_critical and not (len(node.incoming) == 0 or len(node.outgoing) == 0)]
+        nx.draw_networkx_nodes(graph, pos, nodelist=critical_path_nodes, node_color='red', node_size=500)
 
-    # Draw starting, ending nodes
-    polar_nodes = [node for node in graph.nodes() if (len(node.incoming) == 0 or len(node.outgoing) == 0)]
-    nx.draw_networkx_nodes(graph, pos, nodelist=polar_nodes, node_color='darkblue', node_size=500)
+        # Draw starting, ending nodes
+        polar_nodes = [node for node in graph.nodes() if (len(node.incoming) == 0 or len(node.outgoing) == 0)]
+        nx.draw_networkx_nodes(graph, pos, nodelist=polar_nodes, node_color='darkblue', node_size=500)
 
-    # Draw node labels (earliest time and latest time)
-    node_labels = nx.get_node_attributes(graph, 'label')
-    nx.draw_networkx_labels(graph, pos, labels=node_labels, font_size=6, font_color='white')
+        # Draw node labels (earliest time and latest time)
+        node_labels = nx.get_node_attributes(graph, 'label')
+        nx.draw_networkx_labels(graph, pos, labels=node_labels, font_size=6, font_color='white')
 
-    plt.title('Critical Path Method')
-    if not os.path.exists(outputpath):
-        os.makedirs(outputpath)
-    makespan_line = mlines.Line2D([], [], color='none', label=f'Makespan = {makespan}')
-    c_line = mlines.Line2D([], [], color='red', marker='_', markersize=15, label='Critical Paths')
-    j_line = mlines.Line2D([], [], color='black', marker='_', markersize=15, label='Jn: Job n')
-    d_line = mlines.Line2D([], [], color='lightgray', marker='_', markersize=15, label='D: Dummy Job')
+        plt.title('Critical Path Method')
+        if not os.path.exists(outputpath):
+            os.makedirs(outputpath)
+        makespan_line = mlines.Line2D([], [], color='none', label=f'Makespan = {makespan}')
+        c_line = mlines.Line2D([], [], color='red', marker='_', markersize=15, label='Critical Paths')
+        j_line = mlines.Line2D([], [], color='black', marker='_', markersize=15, label='Jn: Job n')
+        d_line = mlines.Line2D([], [], color='lightgray', marker='_', markersize=15, label='D: Dummy Job')
 
-    # Add the legend to the plot
-    plt.legend(handles=[makespan_line, c_line, j_line, d_line], loc='lower left', frameon=False)
-
+        # Add the legend to the plot
+        plt.legend(handles=[makespan_line, c_line, j_line, d_line], loc='lower left', frameon=False)
+    
     plt.savefig(outputpath+'/CPM.png')
     plt.show()
 
