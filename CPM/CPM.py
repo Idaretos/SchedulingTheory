@@ -74,10 +74,10 @@ class Network:
             if current in self.sinks:
                 paths.append(path)
                 return
-            
-            # Explore the successors of the current job
-            for successor in self.successors[current.id]:
-                dfs(successor, path + [successor])
+            else:
+                # Explore the successors of the current job
+                for successor in self.successors[current.id]:
+                    dfs(successor, path + [successor])
 
         paths = []
         # Start DFS from each source in the network

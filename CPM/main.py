@@ -44,7 +44,6 @@ def main():
     print("Latest Start Time:", latest_start_time)
     print("Latest Finish Time:", latest_finish_time)
     print("Slacks:", slacks)
-    # print("Critical Path:", critical_path)
     print_critical_paths(network, title='Critical Paths')
     print("Makespan: ", makespan)
 
