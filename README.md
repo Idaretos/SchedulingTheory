@@ -10,6 +10,7 @@ Currently, the repository contains the following implementations:
 - [Project Evaluation and Review Technique (PERT)](./PERT/)
 - [Time/Cost Trade-Offs](./Time_Cost_Trade_Off/)
 - [Unpaced Assembly System](./UPAS/)
+- [Shifting Bottleneck Heuristic](./Shifting_Bottleneck/)
 
 ## Critical Path Method (CPM)
 The Critical Path Method (CPM) is a project modeling technique used in project management to identify critical and non-critical tasks and prevent schedule conflicts and bottlenecks.
