@@ -33,6 +33,9 @@ The UPAS module is comprehensive, containing preprocessing, simulation, and post
 
 To explore and run the UPAS solver, navigate to the [UPAS directory](./UPAS/).
 
+## Shifting Bottleneck Heuristic
+The Shifting Bottleneck Heuristic is a scheduling algorithm used in Job Shop Scheduling Problem. It is designed to optimize the scheduling of tasks by identifying and shifting the bottleneck, which is the resource or task that is causing the longest delay in the project. By focusing on the bottleneck machine, the algorithm aims to improve the overall efficiency and completion time of the project. To learn more about the Shifting Bottleneck Heuristic, refer to the [Shifting Bottleneck Heuristic directory](./Shifting_Bottleneck_Heuristic/).
+
 ## Getting Started
 
 To run the code in this repository, you will need Python installed on your machine. You can download Python [here](https://www.python.org/downloads/).
