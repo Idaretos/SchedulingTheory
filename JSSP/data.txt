@@ -1,0 +1,21 @@
+
+h:  machine1 
+Lmax:  5 
+sequence:  [job1, job2, job3] 
+
+
+h:  machine2 
+Lmax:  6 
+sequence:  [job2, job1, job3] 
+
+
+h:  machine3 
+Lmax:  6 
+sequence:  [job2, job1] 
+
+
+h:  machine4 
+Lmax:  6 
+sequence:  [job2, job3] 
+
+makespan:  28

@@ -262,12 +262,19 @@ def visualize_CPM(jobs: dict, CPM_results: tuple, network: Network, outputpath: 
         # Create a directed graph
         graph = nx.DiGraph()
         graph.graph['graph'] = {'rankdir': 'LR'}
+        # add source/sink
+        graph.add_node('source', label='source')
+        graph.add_node('sink', label='sink')
         # Add nodes
         for job in jobs.values():
             graph.add_node(job, label=f'{job.id}: {job.duration}')
 
         # Add edges
         for job in jobs.values():
+            if job in network.sources:
+                graph.add_edge('source', job, is_critical=(job in critical_path))
+            if job in network.sinks:
+                graph.add_edge(job, 'sink', is_critical=(job in critical_path))
             for predecessor in job.predecessors:
                 graph.add_edge(jobs[predecessor], job, is_critical=(job in critical_path and jobs[predecessor] in critical_path))
 
@@ -291,10 +298,11 @@ def visualize_CPM(jobs: dict, CPM_results: tuple, network: Network, outputpath: 
         non_critical_nodes = [node for node in graph.nodes() if node not in critical_path]
         nx.draw_networkx_nodes(graph, pos, nodelist=non_critical_nodes, node_color='lightblue', node_size=500)
 
-        # nx.draw_networkx_nodes(graph, pos, node_color='lightblue', node_size=500)
+        # Draw Source and Sink
+        nx.draw_networkx_nodes(graph, pos, nodelist=['source', 'sink'], node_color='darkblue', node_size=500)
 
         node_labels = nx.get_node_attributes(graph, 'label')
-        nx.draw_networkx_labels(graph, pos, labels=node_labels, font_size=6)
+        nx.draw_networkx_labels(graph, pos, labels=node_labels, font_size=6, font_color='white')
         plt.title('Critical Path Method')
     plt.savefig(outputpath+'/CPM.png')
     plt.show()

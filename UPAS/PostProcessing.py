@@ -7,6 +7,7 @@ class PostProcessor(object):
         self.filepath = filepath
 
     def objective(self, until):
+        # Return the objective function value which is the sum of the idle times of the machines
         df = pd.read_csv(self.filepath)
         df = df[df['Event'].str.contains('Op') | df['Event'].str.contains('Trans')]
         df.drop(df.columns[0], axis=1, inplace=True)

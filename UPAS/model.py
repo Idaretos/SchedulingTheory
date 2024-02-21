@@ -10,10 +10,10 @@ def model(until, sequence, num_jobs, num_machines, p, w) -> None:
 
     # Create all machines without setting the next machine
     for i in range(1, num_machines+1):
-        model[f'machine {i}']: Machine = Machine(env, f'machine {i}', model, monitor, i, until)
+        model[f'machine {i}'] = Machine(env, f'machine {i}', model, monitor, i, until)
     
     model['sink'] = Sink(env, monitor)
-    model['source']: Source = Source(env, 'source', model, monitor, until, sequence, [i for i in range(num_jobs)], 0, p)
+    model['source'] = Source(env, 'source', model, monitor, until, sequence, [i for i in range(num_jobs)], 0, p)
     
     ls = list(model.keys())
     for machine in model.values():

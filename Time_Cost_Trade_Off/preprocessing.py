@@ -15,7 +15,7 @@ def read_files(filepath) -> pd.DataFrame:
 def arg() -> tuple:
     inputpath = PATH+'/input/example'
     rule = 'heuristic'
-    v = False
+    v = True
     if len(sys.argv) > 1:
         inputpath = sys.argv[1]
     if len(sys.argv) > 2:
