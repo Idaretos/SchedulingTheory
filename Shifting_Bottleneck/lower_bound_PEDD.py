@@ -47,7 +47,7 @@ class Event(object):
     def __repr__(self) -> str:
         return str(self.type)+str(self.job.id)
 
-class PEDDJ(object):
+class PEDDJ(object): # Preemptive Earliest Due Date - Job
     def __init__(self, sbj, proc_t, release_t, due_t) -> None:
         self.id = sbj.id
         self.sbj = sbj
@@ -57,11 +57,14 @@ class PEDDJ(object):
         self.left_proc_t = proc_t
 
 def get_lower_bound(mlp_table, predetermined = []):
+    # Simulate PEDD (Event-driven simulation)
+    # mlp_table = {job: (proc_t, release_t, due_t)}
+    # predetermined = [job1, job2, ...]
     event_queue = EventQueue()
     pred_priority = -int(1e9)
     for job in predetermined:
         pedd_job = PEDDJ(job, mlp_table[job][0], mlp_table[job][1], mlp_table[job][2])
-        event = Event(pedd_job.release_t, RELEASE, pedd_job, pred_priority, preemptable=False)
+        event = Event(pedd_job.release_t, RELEASE, pedd_job, pred_priority, preemptable=False) # Predetermined jobs are not preemptable
         event_queue.put(event)
         pred_priority += 1
 
@@ -73,7 +76,7 @@ def get_lower_bound(mlp_table, predetermined = []):
             event = Event(pedd_job.release_t, RELEASE, pedd_job)
             event_queue.put(event)
 
-    Lmax = 0
+    Lmax = 0 # Maximum Lateness among all jobs
     t = 0
     start_time_job_in_proc = 0
     job_in_proc = None
