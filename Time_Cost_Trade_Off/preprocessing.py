@@ -12,10 +12,7 @@ def read_files(filepath) -> pd.DataFrame:
     costs.drop(columns=['overhead_cost'], inplace=True)
     return workflow, costs, overhead_cost
 
-def arg() -> tuple:
-    inputpath = PATH+'/input/example'
-    rule = 'heuristic'
-    v = True
+def arg(inputpath=PATH+'/input/example', rule='heuristic', v=False) -> tuple:
     if len(sys.argv) > 1:
         inputpath = sys.argv[1]
     if len(sys.argv) > 2:

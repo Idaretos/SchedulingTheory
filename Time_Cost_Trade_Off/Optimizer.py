@@ -197,7 +197,8 @@ class Optimizer(PathFinder):
         if rule == 'heuristic':
             self.linear_output = None
             self.heuristic(visualize)
-        elif rule == 'linear':
+        elif rule == 'linear' or rule == 'lp':
+            self.rule = 'linear'
             if visualize:
                 warnings.warn('linear optimization does not support visualization')
             self.linear()
