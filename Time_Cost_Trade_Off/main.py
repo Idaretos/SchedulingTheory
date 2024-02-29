@@ -2,7 +2,7 @@ from preprocessing import *
 from Optimizer import Optimizer
 
 if __name__== '__main__':
-    filepath, rule, v = arg(PATH+'/input/lecture', 'heuristic', False) 
+    filepath, rule, v = arg(PATH+'/input/lecture', 'heuristic', True) 
     # for example: python main.py 'input' 'heuristic' 'True'
     # filepath = 'input' (should include costs.csv, workflow.csv)
     # rule = 'heuristic' or 'lp'

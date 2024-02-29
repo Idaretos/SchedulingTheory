@@ -2,9 +2,12 @@ from typing import Tuple, List, Dict
 from itertools import chain, combinations
 from Jobs import *
 from AdjacencyTable import AdjacencyTable
-from CPM_visualize import visualize_CPM
+from CPM_visualize import *
+from matplotlib.widgets import Button
+import matplotlib.pyplot as plt
 import warnings
 import pulp
+
 
 class PathFinder(object):
     def __init__(self, workflow, costs) -> None:
@@ -214,7 +217,7 @@ class Optimizer(PathFinder):
         # Determine all critical path(s) with these processing times.
         critical_path, makespan = self.CPM()
         if visualize:
-            visualize_CPM(self.jobs, (critical_path, makespan), self.paths, title=f'step {step}.')
+            visualize_CPM(self.jobs, (critical_path, makespan), self.paths, title=f'Initial.')
         
         while True:
             # Step 2.
@@ -253,7 +256,7 @@ class Optimizer(PathFinder):
             else:
                 break
         if visualize:
-            visualize_CPM(self.jobs, (critical_path, makespan), self.paths, title=f'Final.')
+            visualize_CPM(self.jobs, (critical_path, makespan), self.paths, title='Final.')
 
         for path in self.paths:
             tmp_span = 0
@@ -263,6 +266,60 @@ class Optimizer(PathFinder):
                 self.critical_paths.append(path)
 
         self.makespan = makespan
+        if visualize:
+            fig, ax = plt.subplots(figsize=(12, 6))
+            fig.subplots_adjust(bottom=0.2)
+            class Index:
+                current_index = 0
+                @staticmethod
+                def draw_graph(data, ax):
+                    ax.clear()
+                    nx.draw(data['graph'], pos=data['positions'], with_labels=False, ax=ax)
+                    # Draw edge labels
+                    nx.draw_networkx_edge_labels(data['graph'], pos=data['positions'], edge_labels=data['edge_labels'], ax=ax)
+                    # Draw emphasized edges
+                    nx.draw_networkx_edges(data['graph'], pos=data['positions'], edgelist=data['emphasize_edges'], edge_color='blue', ax=ax)
+                    # Draw non-critical, non-dummy edges
+                    nx.draw_networkx_edges(data['graph'], pos=data['positions'], edgelist=data['non_critical_non_dummy_edges'], edge_color='black', ax=ax)
+                    # Draw non-critical dummy edges
+                    nx.draw_networkx_edges(data['graph'], pos=data['positions'], edgelist=data['non_critical_dummy_edges'], edge_color='lightgray', ax=ax)
+                    # Draw critical edges
+                    nx.draw_networkx_edges(data['graph'], pos=data['positions'], edgelist=data['critical_edges'], edge_color='red', ax=ax)
+                    # Draw critical, emphasized edges
+                    nx.draw_networkx_edges(data['graph'], pos=data['positions'], edgelist=data['emp_critical_edges'], edge_color='darkblue', width=3, ax=ax)
+                    # Draw non-critical nodes
+                    nx.draw_networkx_nodes(data['graph'], pos=data['positions'], nodelist=data['non_critical_nodes'], node_color='lightblue', ax=ax)
+                    # Draw critical nodes
+                    nx.draw_networkx_nodes(data['graph'], pos=data['positions'], nodelist=data['critical_path_nodes'], node_color='red', ax=ax)
+                    # Draw starting, ending nodes
+                    nx.draw_networkx_nodes(data['graph'], pos=data['positions'], nodelist=data['polar_nodes'], node_color='darkblue', ax=ax)
+                    # Set title
+                    plt.title(data['title'])
+                    # Add legend
+                    ax.legend(handles=[data['makespan_line'], data['c_line'], data['j_line'], data['d_line']], loc='lower left', frameon=False)
+                    plt.draw()
+
+                def next(self, event):
+                    data = PLOTS[self.current_index]
+                    print(self.current_index)
+                    print(data['title'])
+                    self.current_index = min(self.current_index + 1, len(PLOTS)-1)
+                    self.draw_graph(data, ax)
+                def prev(self, event):
+                    self.current_index = max(self.current_index -1, 0)
+                    data = PLOTS[self.current_index]
+                    self.draw_graph(data, ax)
+
+            callback = Index()
+            axprev = fig.add_axes([0.7, 0.05, 0.1, 0.075])
+            axnext = fig.add_axes([0.81, 0.05, 0.1, 0.075])
+            bnext = Button(axnext, 'Next')
+            bnext.on_clicked(callback.next)
+            bprev = Button(axprev, 'Previous')
+            bprev.on_clicked(callback.prev)
+            callback.next(None)
+            plt.show()
+
 
     # The optimize function will now perform the optimization and return the final critical path after all possible reductions.
 

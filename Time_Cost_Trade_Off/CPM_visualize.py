@@ -1,5 +1,4 @@
 import networkx as nx
-import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 import os
 from networkx.drawing.nx_agraph import graphviz_layout
@@ -7,6 +6,8 @@ from collections import defaultdict
 from Jobs import *
 from typing import List
 DEAFULT_PATH = os.path.dirname(os.path.realpath(__file__))+'/output'
+
+PLOTS = []
 
 # Define a class State to represent each state with its incoming and outgoing jobs
 class State(object):
@@ -214,61 +215,123 @@ def visualize_CPM(jobs, CPM_results, paths: List[List[Job]], title='Critical Pat
                 graph.add_edge(state, out_state, label='D: 0', is_critical=(truth[0] and truth[1]), is_dummy=True, emp=False)
 
     # Draw the graph
-    plt.figure(figsize=(12, 6))
+                
     pos = graphviz_layout(graph, prog='dot')
 
     # Draw edge labels within the edge names
     edge_labels = nx.get_edge_attributes(graph, 'label')
-    nx.draw_networkx_edge_labels(graph, pos, edge_labels=edge_labels, font_size=8)
+    # nx.draw_networkx_edge_labels(graph, pos, edge_labels=edge_labels, font_size=8)
 
     # Draw emphasized edges
     emphasize_edges = [(u, v) for u, v, d in graph.edges(data=True) if d['emp']]
-    nx.draw_networkx_edges(graph, pos, edgelist=emphasize_edges, edge_color='blue', arrows=True)
+    # nx.draw_networkx_edges(graph, pos, edgelist=emphasize_edges, edge_color='blue', arrows=True)
 
     # Draw non-critical, non-dummy edges
     non_critical_non_dummy_edges = [(u, v) for u, v, d in graph.edges(data=True) if not d['is_critical'] and not d['is_dummy'] and not d['emp']]
-    nx.draw_networkx_edges(graph, pos, edgelist=non_critical_non_dummy_edges, edge_color='black', arrows=True)
+    # nx.draw_networkx_edges(graph, pos, edgelist=non_critical_non_dummy_edges, edge_color='black', arrows=True)
 
     # Draw non-critical dummy edges
     non_critical_dummy_edges = [(u, v) for u, v, d in graph.edges(data=True) if not d['is_critical'] and d['is_dummy']]
-    nx.draw_networkx_edges(graph, pos, edgelist=non_critical_dummy_edges, edge_color='lightgray', arrows=True)
+    # nx.draw_networkx_edges(graph, pos, edgelist=non_critical_dummy_edges, edge_color='lightgray', arrows=True)
 
     # Draw critical edges
     critical_edges = [(u, v) for u, v, d in graph.edges(data=True) if d['is_critical'] and not d['emp']]
-    nx.draw_networkx_edges(graph, pos, edgelist=critical_edges, edge_color='red', arrows=True)
+    # nx.draw_networkx_edges(graph, pos, edgelist=critical_edges, edge_color='red', arrows=True)
 
     # Draw critical, emphasized edges
     emp_critical_edges = [(u, v) for u, v, d in graph.edges(data=True) if d['is_critical'] and d['emp']]
-    nx.draw_networkx_edges(graph, pos, edgelist=emp_critical_edges, edge_color='darkblue',width=3, arrows=True)
+    # nx.draw_networkx_edges(graph, pos, edgelist=emp_critical_edges, edge_color='darkblue',width=3, arrows=True)
 
 
     # Draw non-critical nodes
     non_critical_nodes = [node for node in graph.nodes() if not node.is_critical]
-    nx.draw_networkx_nodes(graph, pos, nodelist=non_critical_nodes, node_color='lightblue', node_size=500)
+    # nx.draw_networkx_nodes(graph, pos, nodelist=non_critical_nodes, node_color='lightblue', node_size=500)
 
     # Draw critical nodes
     critical_path_nodes = [node for node in graph.nodes() if node.is_critical and not (len(node.incoming) == 0 or len(node.outgoing) == 0)]
-    nx.draw_networkx_nodes(graph, pos, nodelist=critical_path_nodes, node_color='red', node_size=500)
+    # nx.draw_networkx_nodes(graph, pos, nodelist=critical_path_nodes, node_color='red', node_size=500)
 
     # Draw starting, ending nodes
     polar_nodes = [node for node in graph.nodes() if (len(node.incoming) == 0 or len(node.outgoing) == 0)]
-    nx.draw_networkx_nodes(graph, pos, nodelist=polar_nodes, node_color='darkblue', node_size=500)
+    # nx.draw_networkx_nodes(graph, pos, nodelist=polar_nodes, node_color='darkblue', node_size=500)
 
     # Draw node labels (earliest time and latest time)
     node_labels = nx.get_node_attributes(graph, 'label')
-    nx.draw_networkx_labels(graph, pos, labels=node_labels, font_size=6, font_color='white')
+    # nx.draw_networkx_labels(graph, pos, labels=node_labels, font_size=6, font_color='white')
+    # # Draw edge labels within the edge names
+    # edge_labels = nx.get_edge_attributes(graph, 'label')
+    # nx.draw_networkx_edge_labels(graph, pos, edge_labels=edge_labels, font_size=8)
 
-    plt.title(title)
-    if not os.path.exists(outputpath):
-        os.makedirs(outputpath)
+    # # Draw emphasized edges
+    # emphasize_edges = [(u, v) for u, v, d in graph.edges(data=True) if d['emp']]
+    # nx.draw_networkx_edges(graph, pos, edgelist=emphasize_edges, edge_color='blue', arrows=True)
+
+    # # Draw non-critical, non-dummy edges
+    # non_critical_non_dummy_edges = [(u, v) for u, v, d in graph.edges(data=True) if not d['is_critical'] and not d['is_dummy'] and not d['emp']]
+    # nx.draw_networkx_edges(graph, pos, edgelist=non_critical_non_dummy_edges, edge_color='black', arrows=True)
+
+    # # Draw non-critical dummy edges
+    # non_critical_dummy_edges = [(u, v) for u, v, d in graph.edges(data=True) if not d['is_critical'] and d['is_dummy']]
+    # nx.draw_networkx_edges(graph, pos, edgelist=non_critical_dummy_edges, edge_color='lightgray', arrows=True)
+
+    # # Draw critical edges
+    # critical_edges = [(u, v) for u, v, d in graph.edges(data=True) if d['is_critical'] and not d['emp']]
+    # nx.draw_networkx_edges(graph, pos, edgelist=critical_edges, edge_color='red', arrows=True)
+
+    # # Draw critical, emphasized edges
+    # emp_critical_edges = [(u, v) for u, v, d in graph.edges(data=True) if d['is_critical'] and d['emp']]
+    # nx.draw_networkx_edges(graph, pos, edgelist=emp_critical_edges, edge_color='darkblue',width=3, arrows=True)
+
+
+    # # Draw non-critical nodes
+    # non_critical_nodes = [node for node in graph.nodes() if not node.is_critical]
+    # nx.draw_networkx_nodes(graph, pos, nodelist=non_critical_nodes, node_color='lightblue', node_size=500)
+
+    # # Draw critical nodes
+    # critical_path_nodes = [node for node in graph.nodes() if node.is_critical and not (len(node.incoming) == 0 or len(node.outgoing) == 0)]
+    # nx.draw_networkx_nodes(graph, pos, nodelist=critical_path_nodes, node_color='red', node_size=500)
+
+    # # Draw starting, ending nodes
+    # polar_nodes = [node for node in graph.nodes() if (len(node.incoming) == 0 or len(node.outgoing) == 0)]
+    # nx.draw_networkx_nodes(graph, pos, nodelist=polar_nodes, node_color='darkblue', node_size=500)
+
+    # # Draw node labels (earliest time and latest time)
+    # node_labels = nx.get_node_attributes(graph, 'label')
+    # nx.draw_networkx_labels(graph, pos, labels=node_labels, font_size=6, font_color='white')
+
+    # plt.title(title)
+    # if not os.path.exists(outputpath):
+        # os.makedirs(outputpath)
     makespan_line = mlines.Line2D([], [], color='none', label=f'Makespan = {makespan}')
     c_line = mlines.Line2D([], [], color='red', marker='_', markersize=15, label='Critical Paths')
     j_line = mlines.Line2D([], [], color='black', marker='_', markersize=15, label='Jn: Job n')
     d_line = mlines.Line2D([], [], color='lightgray', marker='_', markersize=15, label='D: Dummy Job')
 
     # Add the legend to the plot
-    plt.legend(handles=[makespan_line, c_line, j_line, d_line], loc='lower left', frameon=False)
+    # plt.legend(handles=[makespan_line, c_line, j_line, d_line], loc='lower left', frameon=False)
 
-    plt.savefig(outputpath+'/CPM.png')
-    plt.show()
+    # plt.savefig(outputpath+'/CPM.png')
+    data = {
+        'graph': graph,
+        'positions': pos,
+        'edge_labels': edge_labels,
+        'emphasize_edges': emphasize_edges,
+        'non_critical_non_dummy_edges': non_critical_non_dummy_edges,
+        'non_critical_dummy_edges': non_critical_dummy_edges,
+        'critical_edges': critical_edges,
+        'emp_critical_edges': emp_critical_edges,
+        'non_critical_nodes': non_critical_nodes,
+        'critical_path_nodes': critical_path_nodes,
+        'polar_nodes': polar_nodes,
+        'node_labels': node_labels,
+        'title': title,
+        'makespan': makespan,
+        'outputpath': outputpath,
+        'makespan_line': makespan_line,
+        'c_line': c_line,
+        'j_line': j_line,
+        'd_line': d_line
+    }
+    PLOTS.append(data)
+    
 
