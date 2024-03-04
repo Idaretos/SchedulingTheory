@@ -1,5 +1,6 @@
 import networkx as nx
 import matplotlib.pyplot as plt
+import matplotlib.lines as mlines
 from networkx.drawing.nx_agraph import graphviz_layout
 
 
@@ -49,7 +50,6 @@ class SBN(object):
             self.add_job(job)
 
         self.pos = graphviz_layout(self.graph, prog='dot')
-        print(self.pos)
         
     def add_job(self, job):
         prev_node = 'U'
@@ -96,5 +96,6 @@ class SBN(object):
         nx.draw_networkx_edges(G, self.pos, edgelist=self.disjunctive_edges, edge_color='lightgray', arrows=True)
 
         nx.draw_networkx_labels(G, self.pos)
-        print('makespan: ', self.get_makespan())
+        makespan_line = mlines.Line2D([], [], color='none', label=f'Makespan = {self.get_makespan()}')
+        plt.legend(handles=[makespan_line], frameon=False)
         plt.show()

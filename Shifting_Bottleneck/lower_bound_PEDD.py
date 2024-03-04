@@ -73,38 +73,37 @@ def get_lower_bound(mlp_table, predetermined = []):
             continue
         else:
             pedd_job = PEDDJ(job, mlp_table[job][0], mlp_table[job][1], mlp_table[job][2])
-            event = Event(pedd_job.release_t, RELEASE, pedd_job)
+            event = Event(pedd_job.release_t, RELEASE, pedd_job, preemptable=True)
             event_queue.put(event)
 
-    Lmax = 0 # Maximum Lateness among all jobs
-    t = 0
-    start_time_job_in_proc = 0
-    job_in_proc = None
-    event_in_proc = None
-    job_in_monitor = []
-    preempted = False
-    sequence = []
-    predet_finish_time = 0
+    Lmax = 0                        # Maximum Lateness among all jobs
+    t = 0                           # Current time
+    start_time_job_in_proc = 0      # Start time of the job in the processor (machine)
+    job_in_proc = None              # Job in the processor
+    event_in_proc = None            # Event of the job in the processor (machine)
+    job_in_monitor = []             # Jobs in the monitor (min-heap, released(preempted) jobs waiting to be processed)
+    preempted = False               # Whether the job is preempted
+    sequence = []                   # Sequence of the jobs
+    predet_finish_time = 0          # Finish time of the last predetermined job
 
     while not event_queue.is_empty():
         event = event_queue.get()
         t = event.time
-        if event.type == RELEASE:
-            if job_in_proc is None:
+        if event.type == RELEASE:       # Job release
+            if job_in_proc is None:         # processor idle
                 start_time_job_in_proc = t
                 job_in_proc = event.job
                 sequence.append(job_in_proc.sbj)
                 event = Event(t + event.job.left_proc_t, FINISH, event.job, preemptable=event.preemptable)
                 event_in_proc = event
                 event_queue.put(event)
-            else:
+            else:                           # processor busy: make preemption and put the job in the monitor
                 if event.job.due_t < job_in_proc.due_t and event.priority > event_in_proc.priority:
                     # preempt!
                     preempted = True
                     event_queue.remove(event_in_proc)
                     job_in_proc.left_proc_t -= (t - start_time_job_in_proc)
                     heapq.heappush(job_in_monitor, (((job_in_proc.due_t), job_in_proc)))
-                    # Preempted
                     event = Event(t + event.job.left_proc_t, FINISH, event.job)
                     event_queue.put(event)
                     job_in_proc = event.job
@@ -113,7 +112,7 @@ def get_lower_bound(mlp_table, predetermined = []):
                     start_time_job_in_proc = t
                 else:
                     heapq.heappush(job_in_monitor, ((event.job.due_t, event.job)))
-        elif event.type == FINISH:
+        elif event.type == FINISH: # Job finish
             job_in_proc.left_proc_t = 0
             if event_in_proc.priority < 0:
                 predet_finish_time = t
