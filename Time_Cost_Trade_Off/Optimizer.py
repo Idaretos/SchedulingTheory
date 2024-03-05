@@ -7,6 +7,7 @@ from matplotlib.widgets import Button
 import matplotlib.pyplot as plt
 import warnings
 import pulp
+import time
 
 
 class PathFinder(object):
@@ -188,6 +189,7 @@ class Optimizer(PathFinder):
         self.rule = 'heuristic'
         self.c0 = c0  # Fixed overhead cost per unit time
         self.linear_output=None
+        self.start_time = None
 
     def __rerp__(self) -> str:
         return 'Optimizer'
@@ -196,8 +198,12 @@ class Optimizer(PathFinder):
         '''
         optimize time/cost trade-offs by certain rule
         '''
+        # Start time recording
+        start_time = time.time()
+        self.start_time = start_time
         self.rule = rule
         if rule == 'heuristic':
+            print("Processing...")
             self.linear_output = None
             self.heuristic(visualize)
         elif rule == 'linear' or rule == 'lp':
@@ -301,8 +307,6 @@ class Optimizer(PathFinder):
 
                 def next(self, event):
                     data = PLOTS[self.current_index]
-                    print(self.current_index)
-                    print(data['title'])
                     self.current_index = min(self.current_index + 1, len(PLOTS)-1)
                     self.draw_graph(data, ax)
                 def prev(self, event):
@@ -318,8 +322,16 @@ class Optimizer(PathFinder):
             bprev = Button(axprev, 'Previous')
             bprev.on_clicked(callback.prev)
             callback.next(None)
+            print("\033[A                             \033[A")
+            duration = time.time() - self.start_time
+            print(f"Took {duration:.2f} seconds")
+            self.show()
             plt.show()
-
+        else:
+            print("\033[A                             \033[A")
+            duration = time.time() - self.start_time
+            print(f"Took {duration:.2f} seconds")
+            self.show()
 
     # The optimize function will now perform the optimization and return the final critical path after all possible reductions.
 
@@ -380,21 +392,24 @@ class Optimizer(PathFinder):
 
         results_costs = cal_costs(n, min_costs, p_min, c, results_p)
         self.linear_output = (results_x, results_p, results_costs, results_C_max)
+        duration = time.time() - self.start_time
+        print(f"Took {duration:.2f} seconds\n")
+        self.show()
         
 
     def show(self):
         if self.rule == 'heuristic':
-            print()
             print_jobs(list(self.jobs.values()))
             print('critical_paths:')
             for path in self.critical_paths:
                 print(end='  ')
                 print_path(path)
-            print(f'total_cost: {total_cost(list(self.jobs.values()))}')
-            print(f'makespan: {self.makespan}\n')
+            print(f'Costs:\t\t{total_cost(list(self.jobs.values()))}')
+            print(f'makespan:\t{self.makespan}')
         elif self.rule == 'linear':
             results_x, results_p, results_costs, results_C_max = self.linear_output
-            print("Start times:", results_x)
-            print("Processing times:", results_p)
-            print("Costs:", results_costs)
-            print("Makespan:", results_C_max)
+            print("Start times:\t\t", results_x)
+            print("Processing times:\t", results_p)
+            print("Costs:\t\t\t", results_costs)
+            print("Makespan:\t\t", results_C_max)
+        self.start_time = None
