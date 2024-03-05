@@ -4,7 +4,7 @@ import matplotlib.lines as mlines
 from networkx.drawing.nx_agraph import graphviz_layout
 
 
-class SBM(object):
+class SBM(object): # Shifting Bottleneck Machine
     def __init__(self, id, name):
         self.id = id
         self.name = name
@@ -14,7 +14,7 @@ class SBM(object):
         return self.name
 
 
-class SBJ(object):
+class SBJ(object): # Shifting Bottleneck Job
     def __init__(self, id, name):
         self.id = id
         self.name = name
@@ -24,7 +24,7 @@ class SBJ(object):
         return self.name
 
 
-class SBO(object):
+class SBO(object): # Shifting Bottleneck Operation
     def __init__(self, machine, job, duration):
         self.machine = machine
         self.job = job
@@ -34,7 +34,7 @@ class SBO(object):
         machine.operations.append(self)
 
 
-class SBN(object):
+class SBN(object): # Shifting Bottleneck Network
     def __init__(self, jobs, machines):
         self.graph = nx.DiGraph(rankdir="LR")
         self.graph.add_node('U')
@@ -52,6 +52,7 @@ class SBN(object):
         self.pos = graphviz_layout(self.graph, prog='dot')
         
     def add_job(self, job):
+        # Add operation to the network and add edges between operations by operation order of the job
         prev_node = 'U'
         w = 0
         for operation in job.operations:
@@ -63,6 +64,7 @@ class SBN(object):
         self.graph.add_edge('U', job.operations[0].id, weight=0, label=0)
 
     def add_disjunctive_edge(self, machine, sequence:list):
+        # Add disjunctive edges between operations of the same machine
         prev_node = (machine.id, sequence.pop(0).id)
         w = self.operations[prev_node].duration
         for job in sequence:
@@ -89,7 +91,7 @@ class SBN(object):
         edge_labels = nx.get_edge_attributes(G, 'label')
         
         nx.draw_networkx_edge_labels(G, self.pos, edge_labels=edge_labels)
-        nx.draw_networkx_nodes(G, self.pos, node_color='lightblue')
+        nx.draw_networkx_nodes(G, self.pos, node_color='paleturquoise')
         nx.draw_networkx_nodes(G, self.pos, nodelist=['U', 'V'], node_color='blue')
 
         nx.draw_networkx_edges(G, self.pos)

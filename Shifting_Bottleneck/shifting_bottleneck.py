@@ -4,7 +4,7 @@ from collections import defaultdict
 import heapq
 from networkx.classes.function import path_weight
 
-class SBNode(object):
+class SBNode(object): # Shifting Bottleneck Node
     def __init__(self, predetermined, level, superJ:set, t, lower_bound)->None:
         self.id = tuple(predetermined)
         self.predetermined = predetermined
@@ -24,7 +24,8 @@ class SBNode(object):
     def __eq__(self, other):
         return self.lower_bound == other.lower_bound
 
-class SBNQueue(object):
+class SBNQueue(object): # Shifting Bottleneck Node Queue
+    # Priority Queue of SBNodes, sorted by lower_bound
     def __init__(self, mlp_table)->None:
         self.mlp_table = mlp_table
         self.nodes = []
